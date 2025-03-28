@@ -1,0 +1,36 @@
+[
+  {
+    "$match": {
+      "milestone_closed": false
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "UserStoriesTotal": {
+        "$sum": 1
+      },
+      "UserStoriesWithAC": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$acceptance_criteria",
+                true
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "UserStoriesTotal": 1,
+      "UserStoriesWithAC": 1
+    }
+  }
+]

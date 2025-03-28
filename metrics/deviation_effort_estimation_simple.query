@@ -1,0 +1,70 @@
+[
+  {
+    "$match": {
+      "$and": [
+        {
+          "is_closed": true
+        },
+        {
+          "estimated_effort": {
+            "$ne": null
+          }
+        },
+        {
+          "actual_effort": {
+            "$ne": null
+          }
+        },
+        {
+          "milestone_closed": false
+        }
+      ]
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "closedTasksWithEffortTotal": {
+        "$sum": 1
+      },
+      "highDeviatedTasks": {
+        "$sum": {
+          "$cond": [
+            {
+              "$gt": [
+                {
+                  "$abs": {
+                    "$subtract": [
+                      "$actual_effort",
+                      "$estimated_effort"
+                    ]
+                  }
+                },
+                {
+                  "$multiply": [
+                    "$estimated_effort",
+                    {
+                      "$divide": [
+                        {{threshold}},
+                        100
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "closedTasksWithEffortTotal": 1,
+      "highDeviatedTasks": 1
+    }
+  }
+]

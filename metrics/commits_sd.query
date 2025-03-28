@@ -1,0 +1,117 @@
+[
+  {
+    "$group": {
+      "_id": null,
+      "commitsTotal": {
+        "$sum": {
+          "$cond": [
+            {
+              "$ne": [
+                "$user.login",
+                "anonymous"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsdanipenalba": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "danipenalba"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsKaizoIncc": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "KaizoIncc"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsJordiSanchoo": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "JordiSanchoo"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsCarlosSanchoo": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "CarlosSanchoo"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsSergioo1313": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "Sergioo1313"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsAr1e1": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "Ar1e1"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "commitsTotal": 1,
+      "commitsdanipenalba": 1,
+      "commitsKaizoIncc": 1,
+      "commitsJordiSanchoo": 1,
+      "commitsCarlosSanchoo": 1,
+      "commitsSergioo1313": 1,
+      "commitsAr1e1": 1
+    }
+  }
+]

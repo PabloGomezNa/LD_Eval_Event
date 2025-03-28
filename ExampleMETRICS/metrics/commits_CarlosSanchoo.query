@@ -1,0 +1,42 @@
+[
+  {
+    "$group": {
+      "_id": null,
+      "commitsTotal": {
+        "$sum": {
+          "$cond": [
+            {
+              "$ne": [
+                "$user.login",
+                "anonymous"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      },
+      "commitsAssignee": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$user.login",
+                "CarlosSanchoo"
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "commitsTotal": 1,
+      "commitsAssignee": 1
+    }
+  }
+]
