@@ -68,27 +68,3 @@ def build_metrics_index(metrics_root='metrics'):
     return all_metrics, dict(event_to_metrics)
 
 
-# if __name__ == '__main__':
-#     # Usage example:
-#     all_metrics, event_map = build_metrics_index()
-
-#     print("Loaded metrics:")
-#     for m in all_metrics:
-#         print(f" - {m['name']} (scope={m['scope']}, file={m['filePath']})")
-
-#     print("\nEvent -> Metrics map:")
-#     for evt, mets in event_map.items():
-#         print(f"Event: {evt}")
-#         for md in mets:
-#             print(f"  -> {md['name']} (scope={md['scope']})")
-
-#     # Then later, on event arrival "taiga.task.created"
-#     incoming_event = "task"
-#     if incoming_event in event_map:
-#         triggered_metrics = event_map[incoming_event]
-#         for metric_def in triggered_metrics:
-#             print(f"Recompute metric '{metric_def['name']}' [scope={metric_def['scope']}]")
-#             # ... run the .query for that metric ...
-#             # ... store results ...
-#     else:
-#         print("No metrics assigned to this event.")
