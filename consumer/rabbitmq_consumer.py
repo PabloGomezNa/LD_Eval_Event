@@ -2,11 +2,12 @@ import os
 import json
 import pika
 
+from math import sqrt
 
 from metriclogic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
 
 
-
+#This fields will be later in the .env file 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
 RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
 RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
@@ -16,31 +17,39 @@ RABBITMQ_EXCHANGE_TYPE = os.getenv("RABBITMQ_EXCHANGE_TYPE", "fanout")
 
 def on_message(ch, method, properties, body,event_map, team_students_map):
     """
-    Callback invoked whenever a new message arrives.
+    Callback invoked when a new message arrives to the RabbitMQ.
     """
     #Extract the body
     data = json.loads(body)
-    print(data)
     #From the body extract the event_type and teamname
     event_type = data.get("event_type")
     team_name = data.get("team_name", {})
     print(f"Received event: {event_type}, team_name={team_name}")
     
-    if not team_name:
+    
+    
+    if not team_name: #WHEN DEPLOYED REMOVE THIS¿ 
+        
+        #IN GITHUB IS THIS RETURNING THE ORGANIZATION AND NOT REPO NAME????????
         # If no team found in payload, skip
         print("No 'team' in payload, ignoring.")
         ch.basic_ack(delivery_tag=method.delivery_tag)
         return
     
     
-    # Retrieve the students for the team
+    # Retrieve the students for the team, LOG, REMOVE LATER
     students = team_students_map.get(team_name, [])
-    print("Students in team:", students)
+    print("\nStudents in team:", students)
     
     # Retieve the metric that will be recalculated
     triggered_metrics = event_map.get(event_type, [])
     
-    print("Triggered metrics:", triggered_metrics)
+    #Print trigered metrics SORT OF LOG, WE WILL REMOVE THIS LATER
+    print("\nTriggered metrics:")
+    for metric in triggered_metrics:
+        metric_name = metric.get("name")
+        metric_scope = metric.get("scope")
+        print(f"  - {metric_name} (scope={metric_scope})\n")
     
     
     # Loop over the metrics that will be recalculated
@@ -48,17 +57,26 @@ def on_message(ch, method, properties, body,event_map, team_students_map):
         scope = metric_def.get("scope") # Get the scope of the metric, it can be "team" or "individual"
         if scope == "individual":#If the scope is "individual" 
             for student_name in students: #We loop over the students of the team and compute the metric for each one of them
-                compute_metric_for_student(metric_def, student_name, team_name)
+                compute_metric_for_student(metric_def, event_type, student_name, team_name)
         else: #The scope is "team"
-            compute_metric_for_team(metric_def, team_name) #We compute the metric of the team
+            compute_metric_for_team(metric_def, event_type, team_name) #We compute the metric of the team
+
 
     # Lastly acknowledge message
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 
+
+
+
+
+
+
 def start_consumer(event_map, team_students_map):
-    
+    """
+    Start the RabbitMQ consumer.
+    """    
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     connection_params = pika.ConnectionParameters(
         host=RABBITMQ_HOST,
@@ -79,7 +97,7 @@ def start_consumer(event_map, team_students_map):
     queue_name = result.method.queue
     channel.queue_bind(exchange=RABBITMQ_EXCHANGE, queue=queue_name)
     
-    #?????????????????????????????????????????? THIS
+    
     # We define a callback that includes event_map + team_students_map
     def callback(ch, method, props, body):
         on_message(ch, method, props, body, event_map, team_students_map)

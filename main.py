@@ -1,5 +1,5 @@
 from consumer.rabbitmq_consumer import start_consumer
-from metriclogic.metricsrelation import build_metrics_index
+from metriclogic.metric_event_mapping import build_metrics_index
 
 from LearningDashboardAPIREST_Call.StudentDatafromLDRESTAPI import fetch_team_students_map
 
