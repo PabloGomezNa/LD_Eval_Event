@@ -46,7 +46,6 @@ def store_metric_result(team_name: str, metric_name: str, scope: str, final_val:
 
     db[collection_name].insert_one(doc)
     
-    print(f"[store_metric_result] Inserted doc: {doc}")
     
     
     

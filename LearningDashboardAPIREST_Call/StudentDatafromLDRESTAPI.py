@@ -76,7 +76,6 @@ for project in projects:
 
 # Turn the dictionary into JSON
 json_data = json.dumps(result, indent=2)
-print(json_data)
 
 
 #This is the project id, we can get it from the API, but we need to modify the API to get the project id from the name of the project.
