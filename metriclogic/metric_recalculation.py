@@ -210,6 +210,7 @@ def compute_metric_for_team(metric_def, event_type, team_name):
 
     print(f"TEAM metric result: {final_val}\n")
 
+
     store_metric_result( team_name=team_name, metric_name=metric_def["name"], scope="team", final_val=final_val, event_type=event_type, aggregator_doc=doc)
     
 
