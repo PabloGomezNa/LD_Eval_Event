@@ -1,113 +1,13 @@
 [
   {
     "$match": {
-      "assigned": {
-        "$ne": null
-      }
+      "user.login": { "$ne": "anonymous" }
     }
   },
   {
     "$group": {
-      "_id": null,
-      "tasksTotal": {
-        "$sum": 1
-      },
-      "tasksdanipenalba": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "danipenalba"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      },
-      "tasksMrStickers": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "MrStickers"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      },
-      "tasksjordisanchoo": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "jordisanchoo"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      },
-      "tasksCarlosSanchoo": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "CarlosSanchoo"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      },
-      "taskssergioo1313": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "sergioo1313"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      },
-      "tasksAri3l": {
-        "$sum": {
-          "$cond": [
-            {
-              "$eq": [
-                "$assigned",
-                "Ari3l"
-              ]
-            },
-            1,
-            0
-          ]
-        }
-      }
-    }
-  },
-  {
-    "$project": {
-      "_id": 0,
-      "tasksTotal": 1,
-      "tasksdanipenalba": 1,
-      "tasksMrStickers": 1,
-      "tasksjordisanchoo": 1,
-      "tasksCarlosSanchoo": 1,
-      "taskssergioo1313": 1,
-      "tasksAri3l": 1
+      "_id": "$user.login",
+      "count": { "$sum": 1 }
     }
   }
 ]

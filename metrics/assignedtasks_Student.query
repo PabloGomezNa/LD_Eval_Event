@@ -1,22 +1,17 @@
 [
   {
-    "$match": {
-      "assigned": "Ari3l"
-    }
-  },
-  {
     "$group": {
       "_id": null,
-      "tasksAssigneeTotal": {
+      "tasksTotal": {
         "$sum": 1
       },
-      "closedTasksAssignee": {
+      "tasksAssignee": {
         "$sum": {
           "$cond": [
             {
               "$eq": [
-                "$is_closed",
-                true
+                "$assigned_to",
+                "$$studentUser"
               ]
             },
             1,
@@ -29,8 +24,8 @@
   {
     "$project": {
       "_id": 0,
-      "tasksAssigneeTotal": 1,
-      "closedTasksAssignee": 1
+      "tasksTotal": 1,
+      "tasksAssignee": 1
     }
   }
 ]

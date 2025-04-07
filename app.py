@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 
 # We'll import your existing code
 from metriclogic.metric_event_mapping import build_metrics_index
-from LearningDashboardAPIREST_Call.StudentDatafromLDRESTAPI import fetch_team_students_map
+from LearningDashboardAPIREST_Call.StudentDatafromLDRESTAPI import build_team_students_map
 from metriclogic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
 
 app = Flask(__name__)
@@ -14,15 +14,11 @@ app = Flask(__name__)
 ALL_METRICS, EVENT_MAP = build_metrics_index()
 
 # Build the team->students map at startup
-TEAM_STUDENTS_MAP = fetch_team_students_map()
+TEAM_STUDENTS_MAP = build_team_students_map()
 
 def background_process_event(event_data):
-    """
-    This function runs in a separate thread.
-    1) parse event_type, team_name
-    2) find triggered metrics from EVENT_MAP
-    3) compute them with scope=individual or scope=team
-    """
+
+
     event_type = event_data.get("event_type")
     team_name = event_data.get("team_name")
 
@@ -30,8 +26,17 @@ def background_process_event(event_data):
         print("[Warning] No 'team_name' found in event_data, skipping.")
         return
 
+
+    data_for_team = TEAM_STUDENTS_MAP.get(team_name, {})
+    
+
+    if event_type in ["push", "pull_request"]:  #events from GitHub
+        students = data_for_team.get("GITHUB", [])
+    else:
+        # For instance, "issue", "task" from Taiga
+        students = data_for_team.get("TAIGA", [])
+        
     # Retrieve the students for that team
-    students = TEAM_STUDENTS_MAP.get(team_name, [])
     print(f"[Background] event={event_type}, team={team_name}, students={students}")
 
     # Retrieve the triggered metrics
@@ -45,9 +50,13 @@ def background_process_event(event_data):
             for student_name in students:
                 compute_metric_for_student(metric_def, event_type, student_name, team_name)
         else:  # scope == "team"
-            compute_metric_for_team(metric_def, event_type, team_name)
+            compute_metric_for_team(metric_def, event_type, team_name,students)
 
     print("[Background] Done processing event.")
+
+
+
+
 
 @app.route("/api/event", methods=["POST"])
 def handle_event():

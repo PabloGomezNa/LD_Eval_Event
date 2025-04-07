@@ -45,7 +45,7 @@
                     "$estimated_effort",
                     {
                       "$divide": [
-                        {{threshold}},
+                        25,
                         100
                       ]
                     }
