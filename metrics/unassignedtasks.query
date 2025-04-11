@@ -15,7 +15,7 @@
           "$cond": [
             {
               "$eq": [
-                "$assigned",
+                "$assigned_to",
                 null
               ]
             },

@@ -1,13 +1,15 @@
 [
   {
     "$match": {
-      "user.login": { "$ne": "anonymous" }
+      "assigned_to": {
+        "$ne": null
+      }
     }
   },
   {
-    "$group": {
-      "_id": "$user.login",
-      "count": { "$sum": 1 }
-    }
+      "$group": {
+        "_id": "$assigned_to",
+        "count": { "$sum": 1 }
+      }
   }
 ]

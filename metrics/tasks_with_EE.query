@@ -14,9 +14,9 @@
         "$sum": {
           "$cond": [
             {
-              "$ne": [
-                "$estimated_effort",
-                null
+              "$in": [
+                { "$type": "$custom_attributes.Estimated Effort"},
+                ["int", "long", "double"]
               ]
             },
             1,

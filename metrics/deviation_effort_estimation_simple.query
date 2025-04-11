@@ -6,12 +6,12 @@
           "is_closed": true
         },
         {
-          "estimated_effort": {
+          "custom_attributes.Estimated Effort": {
             "$ne": null
           }
         },
         {
-          "actual_effort": {
+          "custom_attributes.Actual Effort": {
             "$ne": null
           }
         },
@@ -35,14 +35,14 @@
                 {
                   "$abs": {
                     "$subtract": [
-                      "$actual_effort",
-                      "$estimated_effort"
+                      "$custom_attributes.Actual Effort",
+                      "$custom_attributes.Estimated Effort"
                     ]
                   }
                 },
                 {
                   "$multiply": [
-                    "$estimated_effort",
+                    "$custom_attributes.Estimated Effort",
                     {
                       "$divide": [
                         25,

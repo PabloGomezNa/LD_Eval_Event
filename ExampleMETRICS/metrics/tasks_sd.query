@@ -1,7 +1,7 @@
 [
   {
     "$match": {
-      "assigned": {
+      "assigned_": {
         "$ne": null
       }
     }

@@ -7,6 +7,8 @@ TODO
 
 MOVE THINGS TO .ENV FILE
 '''
+
+
 def load_required_fields(filepath):
     """
     Reads only the 'name', 'relatedEvent', and 'scope' keys

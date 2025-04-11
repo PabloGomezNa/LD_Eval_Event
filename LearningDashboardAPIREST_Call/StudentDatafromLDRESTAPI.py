@@ -1,17 +1,3 @@
-# def fetch_team_students_map():
-#     """
-#     Call endpoint from the Learning Dashboard
-#     to get the teams and students. 
-    
-#     Still not implemented :(
-#     We need to modify the API 
-#     """
-#     return {
-#         "LDTestOrganization": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
-#         "ASW_Team6": ["eve", "frank"]
-#     }
-    
-    
 
 
 '''
@@ -114,14 +100,6 @@ def build_team_students_map():
 
 
 
-#This is the project id, we can get it from the API, but we need to modify the API to get the project id from the name of the project.
-    #to acces we need 'http://gessi-dashboard.essi.upc.edu:8888/api/projects'
-    
 
 
 
-#THE EASIEST SOLUTION WOULD BE TO ADD IN THE API THE URL OF THE REPO/TAIGA SO I CAN GET THE NAME 
-
-#ANOTHER OPTION WOULD BE TO SCAN ALL THE USERS EACH TIME, BUT I THINK ITS NOT TO EFFICIENT
-
-#OR FORCE THE STUDENTS TO PUT THE NAME ON THE REPO/TAIGA AS EXTERNAL ID IN THE API
