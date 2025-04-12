@@ -14,9 +14,9 @@
         "$sum": {
           "$cond": [
             {
-              "$eq": [
-                "$acceptance_criteria",
-                true
+              "$in": [
+                { "$type": "$custom_attributes.Acceptance Criteria" },
+                ["string"]
               ]
             },
             1,

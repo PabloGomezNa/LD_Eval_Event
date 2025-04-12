@@ -95,7 +95,8 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
     elif event_type == "epic":
         collection_name = f"{team_name}_epic"
     elif event_type in ["userstory", "relateduserstory"]:
-        collection_name = f"{team_name}_userstory"
+    #elif event_type in ["relateduserstory"]:
+        collection_name = f"{team_name}_userstories"
         
     basepath = os.path.splitext(metric_def["filePath"])[0]
     query_file = basepath + ".query"
@@ -117,8 +118,8 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
         client = MongoClient("mongodb://localhost:27017")
         db = client["event_dashboard"]
         results = list(db[collection_name].aggregate(pipeline))
-        logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
-        logger.info(f"db collection name: {collection_name}") #REMOVED LATER, ONLY TO LOG
+        # logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
+        # logger.info(f"db collection name: {collection_name}") #REMOVED LATER, ONLY TO LOG
         print(f"Results from aggregator: {results}")
 
 
