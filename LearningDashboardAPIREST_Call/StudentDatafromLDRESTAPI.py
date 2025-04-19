@@ -39,6 +39,7 @@ def fetch_projects():
     response.raise_for_status()  # Raise an exception if status != 200
     projects = response.json()
     
+    
     return projects
 
 def fetch_project_details(project_id: int):
@@ -58,32 +59,37 @@ def build_team_students_map():
         ext_id = proj["externalId"]  # e.g. "AMEP11Beats"
 
         details = fetch_project_details(p_id)
+        students_list = details.get("students") or []
+        
+        if not students_list:
+            team_students_map[ext_id] = {}
+            continue
+    
+        subdict={}
+    
+        
         # details["students"] is an array of student objects
         if not details["students"]:
             # no students => maybe skip or store empty
             team_students_map[ext_id] = {"GITHUB": [], "TAIGA": []}
             continue
 
-        gh_usernames = []
-        taiga_usernames = []
-
-        for student_obj in details["students"]:
+        for student_obj in students_list:
             identities = student_obj.get("identities", {})
-            # e.g. identities => {"GITHUB": {"username":"danipenalba"}, "TAIGA": {...}}
-            github_data = identities.get("GITHUB")
-            if github_data and "username" in github_data:
-                gh_usernames.append(github_data["username"])
+            # e.g. identities => {"GITHUB": {"username":"danipenalba"}, "TAIGA": {...}, "GITLAB": {...}}
 
-            taiga_data = identities.get("TAIGA")
-            if taiga_data and "username" in taiga_data:
-                taiga_usernames.append(taiga_data["username"])
+            for data_source_name, identity_data in identities.items():
+                # identity_data might be { "username": "someone123", ... }
+                username = identity_data.get("username")
+                if username:
+                    # if we haven't used this data_source_name yet, create a list
+                    if data_source_name not in subdict:
+                        subdict[data_source_name] = []
+                    subdict[data_source_name].append(username)
 
-        team_students_map[ext_id] = {
-            "GITHUB": gh_usernames,
-            "TAIGA": taiga_usernames
-        }
-        
-        
+        team_students_map[ext_id] = subdict
+
+
             # ADDED MANUALLY TO MAKE THE TESTS WORK
     team_students_map["LDTestOrganization"] = {
         "GITHUB": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
@@ -94,12 +100,20 @@ def build_team_students_map():
         "GITHUB": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
         "TAIGA": ["pgomezn", "pablogz5", "Charlie55"]
     }
-        
+    
+    team_students_map["dd"] = {
+        "GITHUB": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
+    
+    
+        "TAIGA": ["pgomezn", "pablogz5", "Charlie55"]
+    }
+
 
     return team_students_map
+        
+        
 
-
-
+        
 
 
 

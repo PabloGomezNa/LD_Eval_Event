@@ -45,7 +45,7 @@
                     "$custom_attributes.Estimated Effort",
                     {
                       "$divide": [
-                        25,
+                        {{threshold}},
                         100
                       ]
                     }

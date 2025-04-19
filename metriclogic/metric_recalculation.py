@@ -6,6 +6,7 @@ from metriclogic.store_metric_mongo import store_metric_result
 from metriclogic.run_mogo_query import run_mongo_query_for_metric, evaluate_formula
 from statistics import pstdev
 
+from utils.load_config_file import get_event_meta
 
 
 import logging
@@ -18,34 +19,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__) 
 
 
-'''
-TODO:
-
-EVERYTHING MORE PRETTY, DELETE THE PRINTS, ADD LOGGING, ADD EXCEPTIONS, TESTS, ETC.
-DELETE USELESS STUFF
-
-HADNLE STANDARD DEVIATION METRICS
-
-MOVE THINGS TO .ENV
-
-'''
-
-
-
+   
     
     
-    
-    
-    
-
-    
-    
-    
-    
-
-
-
-
 
 def compute_metric_for_student(metric_def, event_type, student_name, team_name):
     """
@@ -64,6 +40,11 @@ def compute_metric_for_student(metric_def, event_type, student_name, team_name):
 
     # placeholders, will replace $$studentUser with the student name
     param_map = { "$$studentUser": student_name }
+    
+    # Can be the case that we have parameters in the query, like the threshold for the stdev. If in the metric definition, we will replace them with the values in the query
+    for pname, pval in metric_def.get("params", {}).items():
+        param_map[f"{{{{{pname}}}}}"] = pval
+    
     logger.info(f"param_map: {param_map}")
     doc = run_mongo_query_for_metric(team_name, student_name, query_file, event_type, param_map)
     logger.info(f"doc: {doc}")
@@ -75,7 +56,7 @@ def compute_metric_for_student(metric_def, event_type, student_name, team_name):
         final_val=evaluate_formula(formula_str,doc)
     print(f"Result: {final_val}\n")
     
-    store_metric_result(team_name, metric_def["name"], scope="individual", final_val=final_val, event_type=event_type, student_name=student_name, aggregator_doc=doc)
+    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=student_name, aggregator_doc=doc)
     
 
 
@@ -84,19 +65,29 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
     """
     A simpler approach if no placeholders needed, or if placeholders are at team level.
     """
+    meta = get_event_meta(event_type)
     
-        #Un poco feo pero sirve
-    if event_type == "push":
-        collection_name = f"{team_name}_commits" 
-    elif event_type == "issue":
-        collection_name = f"{team_name}_issue"
-    elif event_type == "task":
-        collection_name = f"{team_name}_tasks"
-    elif event_type == "epic":
-        collection_name = f"{team_name}_epic"
-    elif event_type in ["userstory", "relateduserstory"]:
-    #elif event_type in ["relateduserstory"]:
-        collection_name = f"{team_name}_userstories"
+    print(f"Event meta: {meta}")
+
+
+    if meta is None:
+        print(f"Event type '{event_type}' not found in meta data.")
+        return
+    
+    collection_name = f"{team_name}_{meta['collection_suffix']}"  
+    
+    #     #Un poco feo pero sirve
+    # if event_type == "push":
+    #     collection_name = f"{team_name}_commits" 
+    # elif event_type == "issue":
+    #     collection_name = f"{team_name}_issue"
+    # elif event_type == "task":
+    #     collection_name = f"{team_name}_tasks"
+    # elif event_type == "epic":
+    #     collection_name = f"{team_name}_epic"
+    # elif event_type in ["userstory", "relateduserstory"]:
+    # #elif event_type in ["relateduserstory"]:
+    #     collection_name = f"{team_name}_userstories"
         
     basepath = os.path.splitext(metric_def["filePath"])[0]
     query_file = basepath + ".query"
@@ -111,7 +102,12 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
         print(f"Recomputing TEAM metric '{metric_def['name']}' formula=({formula_str}) for team='{team_name}'")
         
         param_map={} #Empty param map as we are not using any placeholders in any team query
-        pipeline = load_query_template(query_file)
+        
+            # Can be the case that we have parameters in the query, like the threshold for the stdev. If in the metric definition, we will replace them with the values in the query
+        for pname, pval in metric_def.get("params", {}).items():
+            param_map[f"{{{{{pname}}}}}"] = pval
+        
+        pipeline = load_query_template(query_file, param_map) #Load the query template, we will replace the placeholders later if needed
         pipeline = replace_placeholders_in_query(pipeline, param_map)
 
         
@@ -135,7 +131,7 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
 
         print(f"TEAM metric result: {final_val}\n")
 
-        store_metric_result( team_name=team_name, metric_name=metric_def["name"], scope="team", final_val=final_val, event_type=event_type, aggregator_doc=doc)
+        store_metric_result( team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=doc)
     
 
 
@@ -150,7 +146,12 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
 
 
     # load aggregator
-    pipeline = load_query_template(query_file)
+    param_map={} #Empty param map as we are not using any placeholders in any team query
+        # Can be the case that we have parameters in the query, like the threshold for the stdev. If in the metric definition, we will replace them with the values in the query
+    for pname, pval in metric_def.get("params", {}).items():
+        param_map[f"{{{{{pname}}}}}"] = pval
+    
+    pipeline = load_query_template(query_file, param_map) #Load the query template, we will replace the placeholders later if needed
 
     client = MongoClient("mongodb://localhost:27017")
     db = client["event_dashboard"]
@@ -185,18 +186,10 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
         "teamMembers": team_members
     }
 
-    store_metric_result(
-        team_name=team_name,
-        metric_name=metric_def["name"],
-        scope="team",
-        final_val=final_val,
-        event_type=event_type,
-        aggregator_doc=aggregator_doc
-    )
+    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=aggregator_doc)
 
     print(f"[TEAM-SD] Final stdev: {final_val}\n")
     return final_val
-
 
 
 

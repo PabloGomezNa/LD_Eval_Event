@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from metriclogic.metric_placeholder import load_query_template, replace_placeholders_in_query
 
-
+from utils.load_config_file import get_event_meta
 
 def evaluate_formula(formula_str, result_doc):
     """
@@ -43,23 +43,20 @@ def run_mongo_query_for_metric(team_name: str, student_name: str, query_file: st
     
     # #possible related_events sent by LD_connect from GITHUB: push, issues       from TAIGA: issue, epic, task, userstory, relatedusertory
 
+    meta = get_event_meta(event_type)
+    
+    print(f"Event meta: {meta}")
 
 
-    #First get the collection we will use to run the query and get the data
-    if event_type == "push":
-        collection_name = f"{team_name}_commits" 
-    elif event_type == "issue":
-        collection_name = f"{team_name}_issue"
-    elif event_type == "task":
-        collection_name = f"{team_name}_tasks"
-    elif event_type == "epic":
-        collection_name = f"{team_name}_epic"
-    elif event_type in ["userstory", "relateduserstory"]:
-        collection_name = f"{team_name}_userstory"
-
+    if meta is None:
+        print(f"Event type '{event_type}' not found in meta data.")
+        return
+    
+    collection_name = f"{team_name}_{meta['collection_suffix']}"  
+    
 
     # load the aggregator pipeline from the .query file    
-    pipeline = load_query_template(query_file) 
+    pipeline = load_query_template(query_file, placeholder_map) #load the query template from the file and replace the placeholders with the values in the param_map
     
     #logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
     

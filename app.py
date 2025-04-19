@@ -1,4 +1,4 @@
-# app_rest.py
+# app.py
 
 import threading
 from flask import Flask, request, jsonify
@@ -8,6 +8,9 @@ from metriclogic.metric_event_mapping import build_metrics_index
 from LearningDashboardAPIREST_Call.StudentDatafromLDRESTAPI import build_team_students_map
 from metriclogic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
 
+from utils.load_config_file import get_event_meta
+
+
 app = Flask(__name__)
 
 # Build the metrics event map at startup (like you did in main.py before)
@@ -16,25 +19,39 @@ ALL_METRICS, EVENT_MAP = build_metrics_index()
 # Build the team->students map at startup
 TEAM_STUDENTS_MAP = build_team_students_map()
 
+
+
 def background_process_event(event_data):
 
 
     event_type = event_data.get("event_type")
     team_name = event_data.get("team_name")
 
+
+    meta = get_event_meta(event_type)
+    print(meta)
+    
     if not team_name:
         print("[Warning] No 'team_name' found in event_data, skipping.")
-        return
+        return    
 
 
-    data_for_team = TEAM_STUDENTS_MAP.get(team_name, {})
+    data_source= meta["data_source"]
+    students=TEAM_STUDENTS_MAP.get(team_name, {}).get(data_source, [])
     
+    
+    # #ESTO LO CAMBIAREMOS PARA QUE SEA LEIDO POR EL ARCHIVO .CONDIF
+    # if event_type in ["push", "pull_request"]:  #events from GitHub
+    #     students = data_for_team.get("GITHUB", [])
+    # else:
+    #     # For instance, "issue", "task" from Taiga
+    #     students = data_for_team.get("TAIGA", [])
 
-    if event_type in ["push", "pull_request"]:  #events from GitHub
-        students = data_for_team.get("GITHUB", [])
-    else:
-        # For instance, "issue", "task" from Taiga
-        students = data_for_team.get("TAIGA", [])
+
+
+
+
+
         
     # Retrieve the students for that team
     print(f"[Background] event={event_type}, team={team_name}, students={students}")

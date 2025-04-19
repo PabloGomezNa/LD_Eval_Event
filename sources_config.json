@@ -1,0 +1,25 @@
+{
+  "push": {
+    "data_source": "GITHUB",
+    "collection_suffix": "commits"
+  },
+
+  "issue": {
+    "data_source": "TAIGA",
+    "collection_suffix": "issues"
+  },
+
+  "task": {
+    "data_source": "TAIGA",
+    "collection_suffix": "tasks"
+  },
+
+  "epic": {
+    "data_source": "TAIGA",
+    "collection_suffix": "epics"
+  },
+  "userstory": {
+    "data_source": "TAIGA",
+    "collection_suffix": "userstories"
+  }
+}

@@ -1,12 +1,19 @@
 # metriclogic/placeholders.py
 import json
 
-def load_query_template(query_file):
+def load_query_template(query_file, param_map=None):
     """
     Loads the .query file as a Python object (list/dict).
     """
     with open(query_file, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        
+        query_str = f.read()
+    
+    if param_map: 
+        for placeholder, value in param_map.items(): #If we have a param_map, we replace the placeholders in the template with the values from the param_map, to avoid integer problems
+            query_str = query_str.replace(placeholder, str(value))
+    
+    return json.loads(query_str)
 
 
 
@@ -44,7 +51,7 @@ def replace_placeholders_in_query(query_ast, param_map):
     elif isinstance(query_ast, str):
         out_str = query_ast
         for placeholder, real_value in param_map.items():
-            out_str = out_str.replace(placeholder, real_value)
+            out_str = out_str.replace(placeholder, str(real_value))
         return out_str
     else:
         return query_ast
