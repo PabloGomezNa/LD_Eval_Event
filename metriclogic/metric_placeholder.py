@@ -1,9 +1,10 @@
 # metriclogic/placeholders.py
 import json
 
-def load_query_template(query_file, param_map=None):
+def load_query_template(query_file, param_map=None) -> dict:
     """
     Loads the .query file as a Python object (list/dict).
+    It also replaces the placeholders in the template with the values from the param_map.
     """
     with open(query_file, 'r', encoding='utf-8') as f:
         
@@ -19,23 +20,20 @@ def load_query_template(query_file, param_map=None):
 
 
 
-
-# placeholders
-def replace_placeholders_in_query(query_ast, param_map):
+def replace_placeholders_in_query(query_ast: list, param_map: dict) -> list:
     """
     All this function simply replaces the "$$StudentUser" for the value in param_map.
     In our case param_map will the name of the student in each state of the loop. 
     With that we can define once the query and use all the students names in the loop.
-    """
     
-    # If query_ast is a list, we need to iterate over each item and replace placeholders in each one.
+    If query_ast is a list, we need to iterate over each item and replace placeholders in each one.
     #Normally this is the case, the pipeline in mongo is a dictionary with the stages as keys and the values as the query.
-    '''
+    
     [
   { "$match": { "student": "$$studentUser" } },
   { "$group": { "_id": "$team", "count": { "$sum": 1 } } }
         ]
-    '''
+    """
     if isinstance(query_ast, dict):
         return {
             k: replace_placeholders_in_query(v, param_map)

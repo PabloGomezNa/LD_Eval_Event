@@ -1,37 +1,6 @@
-
-
-'''
-http://gessi-dashboard.essi.upc.edu:8888/api/projects
-
-[{"id":180,"externalId":"AMEP11Beats","name":"AMEP11Beats","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":186,"externalId":"AMEP11ChopChop","name":"AMEP11ChopChop","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":179,"externalId":"AMEP11UniMatch","name":"AMEP11UniMatch","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":181,"externalId":"AMEP12Academy4All","name":"AMEP12Academy4All","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":182,"externalId":"AMEP21Cano3","name":"AMEP21Cano3","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":185,"externalId":"AMEP21Krunkillos","name":"AMEP21Krunkillos","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":177,"externalId":"AMEP21Sportifiers","name":"AMEP21Sportifiers","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":184,"externalId":"AMEP21SportifyCoach","name":"AMEP21SportifyCoach","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":183,"externalId":"AMEP22GoRace","name":"AMEP22GoRace","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":178,"externalId":"AMEP22TicketMonsterTM","name":"AMEP22TicketMonsterTM","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null},
-{"id":187,"externalId":"it12d","name":"it12d","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},"students":null}]
-
-
-http://gessi-dashboard.essi.upc.edu:8888/api/projects/180
-
-{"id":180,"externalId":"AMEP11Beats","name":"AMEP11Beats","description":"No description specified","logo":null,"active":true,"backlogId":null,"isGlobal":false,"anonymized":false,"identities":{},
-"students":
-    [{"id":771,"name":"Sergio Conde","identities":{"GITHUB":{"username":"Sergioo1313","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"sergioo1313","student":null,"data_source":"TAIGA"}},"project":null},
-    {"id":769,"name":"Jordi Sancho","identities":{"GITHUB":{"username":"JordiSanchoo","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"jordisanchoo","student":null,"data_source":"TAIGA"}},"project":null},
-    {"id":768,"name":"Aymane El Hisati","identities":{"GITHUB":{"username":"KaizoIncc","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"MrStickers","student":null,"data_source":"TAIGA"}},"project":null},
-    {"id":770,"name":"Carlos Sancho","identities":{"GITHUB":{"username":"CarlosSanchoo","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"CarlosSanchoo","student":null,"data_source":"TAIGA"}},"project":null},
-    {"id":772,"name":"Ariel Medina","identities":{"GITHUB":{"username":"Ar1e1","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"Ari3l","student":null,"data_source":"TAIGA"}},"project":null},
-    {"id":767,"name":"Daniel Peñalba","identities":{"GITHUB":{"username":"danipenalba","student":null,"data_source":"GITHUB"},"TAIGA":{"username":"danipenalba","student":null,"data_source":"TAIGA"}},"project":null}]}
-'''
-
-
 import requests
 
-BASE_URL = "http://gessi-dashboard.essi.upc.edu:8888/api"
+BASE_URL = "http://gessi-dashboard.essi.upc.edu:8888/api" 
 
 def fetch_projects():
     url = f"{BASE_URL}/projects"
@@ -90,7 +59,9 @@ def build_team_students_map():
         team_students_map[ext_id] = subdict
 
 
-            # ADDED MANUALLY TO MAKE THE TESTS WORK
+
+
+            # ADDED MANUALLY TO MAKE THE TESTS WORK, REMOVE LATER
     team_students_map["LDTestOrganization"] = {
         "GITHUB": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
         "TAIGA": ["pgomezn", "pgomezna", "charlie"]

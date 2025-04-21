@@ -10,6 +10,14 @@ from metriclogic.metric_recalculation import compute_metric_for_student, compute
 
 from utils.load_config_file import get_event_meta
 
+from utils.logger_setup import setup_logging
+import logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+
+
 
 app = Flask(__name__)
 
@@ -26,13 +34,14 @@ def background_process_event(event_data):
 
     event_type = event_data.get("event_type")
     team_name = event_data.get("team_name")
+    author_name = event_data.get("author_login")
 
 
     meta = get_event_meta(event_type)
-    print(meta)
+    logger.info(meta) #PUT THIS LATER IN DEBUG LEVEL
     
     if not team_name:
-        print("[Warning] No 'team_name' found in event_data, skipping.")
+        logger.warning("[Warning] No 'team_name' found in event_data, skipping.")
         return    
 
 
@@ -40,25 +49,13 @@ def background_process_event(event_data):
     students=TEAM_STUDENTS_MAP.get(team_name, {}).get(data_source, [])
     
     
-    # #ESTO LO CAMBIAREMOS PARA QUE SEA LEIDO POR EL ARCHIVO .CONDIF
-    # if event_type in ["push", "pull_request"]:  #events from GitHub
-    #     students = data_for_team.get("GITHUB", [])
-    # else:
-    #     # For instance, "issue", "task" from Taiga
-    #     students = data_for_team.get("TAIGA", [])
-
-
-
-
-
-
         
     # Retrieve the students for that team
-    print(f"[Background] event={event_type}, team={team_name}, students={students}")
+    logger.info(f"Event={event_type}, team={team_name}, students={students}")
 
     # Retrieve the triggered metrics
     triggered_metrics = EVENT_MAP.get(event_type, [])
-    print(f"[Background] triggered metrics: {[m['name'] for m in triggered_metrics]}")
+    logger.info(f"Triggered metrics: {[m['name'] for m in triggered_metrics]}")
 
     # Recompute each metric
     for metric_def in triggered_metrics:
@@ -66,10 +63,13 @@ def background_process_event(event_data):
         if scope == "individual":
             for student_name in students:
                 compute_metric_for_student(metric_def, event_type, student_name, team_name)
-        else:  # scope == "team"
+        elif scope == "team":  # scope == "team"
             compute_metric_for_team(metric_def, event_type, team_name,students)
-
-    print("[Background] Done processing event.")
+        else: #scope == "individual_only"
+            compute_metric_for_student(metric_def, event_type, author_name, team_name)
+            
+            
+    logger.info("Done processing event.")
 
 
 

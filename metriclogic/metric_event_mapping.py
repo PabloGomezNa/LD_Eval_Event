@@ -5,8 +5,7 @@ from collections import defaultdict
 
 def load_required_fields(filepath):
     """
-    Reads only the 'name', 'relatedEvent', and 'scope' keys
-    from a .properties file. Returns a dict with those fields
+    Reads some keys from the .properties metrics files. Returns a dict with those fields
     if found, ignoring everything else.
     """
     allowed_keys = {'name', 'relatedEvent', 'scope', 'metric','description','factors','weights'}
@@ -41,10 +40,12 @@ def load_required_fields(filepath):
     return props
 
 
+
+
 def build_metrics_index(metrics_root='metrics'): #THIS ROOT WILL BE LATER IN THE .ENV FILE
     """
     Recursively scan `metrics_root` for .properties files.
-    Return:
+    Return two maps:
       - all_metrics: list of all metric definitions
       - event_to_metrics: dict { event -> [metricDef1, metricDef2, ...] }
     """
@@ -57,8 +58,6 @@ def build_metrics_index(metrics_root='metrics'): #THIS ROOT WILL BE LATER IN THE
                 fullpath = os.path.join(root, file)
                 props = load_required_fields(fullpath)
                 
-                print(f"Properties: {props}")
-
                 # We expect metric "name" to be mandatory
                 metric_name = props.get('name', os.path.splitext(file)[0])
 
@@ -78,10 +77,7 @@ def build_metrics_index(metrics_root='metrics'): #THIS ROOT WILL BE LATER IN THE
                 scope = props.get('scope', '')  # default to "team" if not specified
 
                 # Extract the formula
-                formula = props.get('metric', '')  
-                
-                # Extract the parameters 
-                
+                formula = props.get('metric', '')              
                 
                 
                 # Now build a dictionary describing the metric

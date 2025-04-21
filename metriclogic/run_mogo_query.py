@@ -3,9 +3,18 @@ from metriclogic.metric_placeholder import load_query_template, replace_placehol
 
 from utils.load_config_file import get_event_meta
 
-def evaluate_formula(formula_str, result_doc):
+from utils.logger_setup import setup_logging
+import logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+
+
+
+def evaluate_formula(formula_str: str, result_doc: dict) -> float: 
     """
-    Explanation
+    Evaluate the formula string using the values from the result_doc.
     """
     # create a variable dict with all keys from the doc
     # e.g. commitsAssignee -> 10, commitsTotal -> 11
@@ -38,18 +47,17 @@ def evaluate_formula(formula_str, result_doc):
 
 def run_mongo_query_for_metric(team_name: str, student_name: str, query_file: str, event_type, placeholder_map: dict) -> dict:
     """
-    Explanation
+    Run a MongoDB query for a specific metric and return the result.
     """
     
     # #possible related_events sent by LD_connect from GITHUB: push, issues       from TAIGA: issue, epic, task, userstory, relatedusertory
 
     meta = get_event_meta(event_type)
-    
-    print(f"Event meta: {meta}")
+    logger.debug(f"Event meta: {meta}") #CHANGE THIS LATER TO DEBUG LEVEL
 
 
     if meta is None:
-        print(f"Event type '{event_type}' not found in meta data.")
+        logger.warning(f"Event type '{event_type}' not found in meta data.")
         return
     
     collection_name = f"{team_name}_{meta['collection_suffix']}"  
@@ -57,21 +65,19 @@ def run_mongo_query_for_metric(team_name: str, student_name: str, query_file: st
 
     # load the aggregator pipeline from the .query file    
     pipeline = load_query_template(query_file, placeholder_map) #load the query template from the file and replace the placeholders with the values in the param_map
-    
-    #logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
+    logger.debug(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
     
     
     # .query has placeholders  "$$studentUser", need the function to recursively replace them
     pipeline = replace_placeholders_in_query(pipeline, {"$$studentUser": student_name})
     
-    #logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
 
     # connect to mongo, run the pipeline
     client = MongoClient("mongodb://localhost:27017")
     db = client["event_dashboard"]
     cursor = db[collection_name].aggregate(pipeline)
     results = list(cursor)
-    print(f"Results: {results}") #REMOVED LATER, ONLY TO LOG
+    logger.info(f"Results: {results}") #REMOVED LATER, ONLY TO LOG
 
     if not results: #if for some case the query returns no results, we return 0,0 
         return {} 

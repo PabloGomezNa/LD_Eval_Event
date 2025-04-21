@@ -5,6 +5,9 @@ from datetime import datetime
 
 #def store_metric_result(team_name: str, metric_name: str, scope: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
 def store_metric_result(team_name: str, metric_def: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
+    '''
+    Insert a metric result into the MongoDB database.
+    '''
 
     collection_name = f"{team_name}_metrics"
 

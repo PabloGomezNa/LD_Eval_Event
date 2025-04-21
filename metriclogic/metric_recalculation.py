@@ -1,4 +1,5 @@
 # metriclogic/recalc.py
+
 import os
 from pymongo import MongoClient
 from metriclogic.metric_placeholder import load_query_template, replace_placeholders_in_query
@@ -7,21 +8,12 @@ from metriclogic.run_mogo_query import run_mongo_query_for_metric, evaluate_form
 from statistics import pstdev
 
 from utils.load_config_file import get_event_meta
-
-
+from utils.logger_setup import setup_logging
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,  # Set level to DEBUG so that all debug and above messages are shown
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+setup_logging()
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__) 
-
-
-   
-    
-    
 
 def compute_metric_for_student(metric_def, event_type, student_name, team_name):
     """
@@ -34,27 +26,30 @@ def compute_metric_for_student(metric_def, event_type, student_name, team_name):
 
     
     formula_str = metric_def["formula"]  # e.g. "commitsAssignee / commitsTotal"
-    print(f"Recomputing INDIV metric '{metric_def['name']}' formula=({formula_str}) "
-          f"for student='{student_name}' team='{team_name}'")
     
-
+    logger.info(f"Recomputing INDIV metric '{metric_def['name']}' formula=({formula_str}) for student='{student_name}' team='{team_name}'")
+    
     # placeholders, will replace $$studentUser with the student name
     param_map = { "$$studentUser": student_name }
+    logger.debug(f"param_map: {param_map}")
+    
     
     # Can be the case that we have parameters in the query, like the threshold for the stdev. If in the metric definition, we will replace them with the values in the query
     for pname, pval in metric_def.get("params", {}).items():
         param_map[f"{{{{{pname}}}}}"] = pval
     
-    logger.info(f"param_map: {param_map}")
+
     doc = run_mongo_query_for_metric(team_name, student_name, query_file, event_type, param_map)
-    logger.info(f"doc: {doc}")
+    logger.debug(f"doc: {doc}")
+    
+    
     if not doc:
         final_val=0.0
-        print(f"No aggregator resutsl, setting final_val to 0.0")
+        logger.warning(f"No aggregator results, setting final_val to 0.0")
     else:
         #evaulate the formula
         final_val=evaluate_formula(formula_str,doc)
-    print(f"Result: {final_val}\n")
+    logger.info(f"Result: {final_val}\n")
     
     store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=student_name, aggregator_doc=doc)
     
@@ -67,16 +62,15 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
     """
     meta = get_event_meta(event_type)
     
-    print(f"Event meta: {meta}")
+    logger.debug(f"Event meta: {meta}")
 
 
     if meta is None:
-        print(f"Event type '{event_type}' not found in meta data.")
+        logger.warning(f"Event type '{event_type}' not found in meta data.")
         return
     
     collection_name = f"{team_name}_{meta['collection_suffix']}"  
     
-    #     #Un poco feo pero sirve
     # if event_type == "push":
     #     collection_name = f"{team_name}_commits" 
     # elif event_type == "issue":
@@ -99,7 +93,7 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
     
     else:
         
-        print(f"Recomputing TEAM metric '{metric_def['name']}' formula=({formula_str}) for team='{team_name}'")
+        logger.info(f"Recomputing TEAM metric '{metric_def['name']}' formula=({formula_str}) for team='{team_name}'")
         
         param_map={} #Empty param map as we are not using any placeholders in any team query
         
@@ -114,22 +108,23 @@ def compute_metric_for_team(metric_def, event_type, team_name,students):
         client = MongoClient("mongodb://localhost:27017")
         db = client["event_dashboard"]
         results = list(db[collection_name].aggregate(pipeline))
-        # logger.info(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
-        # logger.info(f"db collection name: {collection_name}") #REMOVED LATER, ONLY TO LOG
-        print(f"Results from aggregator: {results}")
+        
+        logger.debug(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
+        logger.debug(f"db collection name: {collection_name}") #REMOVED LATER, ONLY TO LOG
+        logger.debug(f"Results from aggregator: {results}")
 
 
 
         if not results:
             final_val = 0.0
-            print(f"No aggregator result; defaulting to {final_val}")
+            logger.warning(f"No aggregator results; defaulting to {final_val}")
             doc = {} # If no results, we can set doc to empty dict or None
         else:
             # 3) Evaluate the formula
             doc = results[0]   # aggregator typically returns one doc
             final_val = evaluate_formula(formula_str, doc)
 
-        print(f"TEAM metric result: {final_val}\n")
+        logger.info(f"TEAM metric result: {final_val}\n")
 
         store_metric_result( team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=doc)
     
@@ -142,7 +137,7 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
     basepath = os.path.splitext(metric_def["filePath"])[0]
     query_file = basepath + ".query"
 
-    print(f"[TEAM-SD] Recomputing metric '{metric_def['name']}' for team='{team_name}'")
+    logger.info(f"Recomputing metric '{metric_def['name']}' for team='{team_name}'")
 
 
     # load aggregator
@@ -156,7 +151,7 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
     client = MongoClient("mongodb://localhost:27017")
     db = client["event_dashboard"]
     docs = list(db[collection_name].aggregate(pipeline))
-    print(f"Aggregator results: {docs}")
+    logger.debug(f"Aggregator results: {docs}")
 
     # build aggregator_map
     aggregator_map = {}
@@ -188,7 +183,7 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
 
     store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=aggregator_doc)
 
-    print(f"[TEAM-SD] Final stdev: {final_val}\n")
+    logger.info(f"Final stdev: {final_val}\n")
     return final_val
 
 
