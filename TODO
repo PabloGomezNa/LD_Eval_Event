@@ -1,0 +1,9 @@
+- Estoy usando CET time y no CET`+1 (española)
+- Test excel metrics
+- Indicator recalcultion
+- Indictor stoer in mongo
+- Factor store in mongo corrected
+. Remove factor and indicator from .properties and change for the filepath as the metrics
+- Logger
+- create .env
+- Tidy code, document functions

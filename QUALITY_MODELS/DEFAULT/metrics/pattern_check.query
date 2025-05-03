@@ -1,0 +1,36 @@
+[
+  {
+    "$match": {
+      "milestone_closed": false
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "userStoriesTotal": {
+        "$sum": 1
+      },
+      "userStoriesWithPattern": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$pattern",
+                true
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "userStoriesTotal": 1,
+      "userStoriesWithPattern": 1
+    }
+  }
+]

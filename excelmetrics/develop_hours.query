@@ -1,0 +1,20 @@
+[
+  {
+    "$group": {
+      "_id": null,
+      "hoursTotal": {
+        "$sum": "$total_hours"
+      },
+      "hoursDev": {
+        "$sum": "$des_hours"
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "hoursTotal": 1,
+      "hoursDev": 1
+    }
+  }
+]

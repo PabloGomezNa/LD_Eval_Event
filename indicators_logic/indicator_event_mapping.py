@@ -1,0 +1,65 @@
+import os
+from collections import defaultdict
+from utils.quality_model_loader import scan_quality_model_folder
+
+
+def load_required_fields_indicator(filepath):
+    """
+    Reads some keys from the .properties metrics files. Returns a dict with those fields
+    if found, ignoring everything else.
+    
+    I THINK WE CAN DELETE ALL THE PARAMS LOGIC, AS IN INDICATOR AND FACTORS WE WONT HAVE
+    
+    """
+    allowed_keys = {'name', 'description','factor','formula','weights','relatedEvent'}
+    props = {}
+    params = {}
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            if '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip()
+
+            if key in allowed_keys:
+                props[key] = value
+
+            elif key.startswith('param.'):
+                raw = value.strip() #Get the value of the parameter
+                try:                     # turn to int/float if we can
+                    val = int(raw) if raw.isdigit() else float(raw)
+                except ValueError: #if not a number, keep it as string
+                    val = raw
+   
+                params[key[6:]] = val
+                
+        if params:
+            props['params'] = params
+                
+    return props
+
+
+def build_indicator_def(props, qm, path):
+    return {
+        "filePath": path,
+        "name": props["name"],
+        "description": props.get("description",""),
+        "factor": [m.strip() for m in props.get("factor","").split(",") if m],
+        "formula": props.get("formula", "average"),
+        "weights": [w.strip() for w in props.get('weights', '').split(',') if w.strip()],
+        "quality_model": qm,
+    }
+
+def build_indicators_index_per_qm(qm_root="QUALITY_MODELS"):
+    return scan_quality_model_folder(
+        qm_root,
+        subfolder="indicators",
+        props_loader=load_required_fields_indicator,
+        build_def=build_indicator_def
+    )
+    
+    

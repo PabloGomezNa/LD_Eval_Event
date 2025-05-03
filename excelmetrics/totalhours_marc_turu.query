@@ -1,0 +1,31 @@
+[
+  {
+    "$group": {
+      "_id": "null",
+      "hoursTotal": {
+        "$sum": "$total_hours"
+      },
+      "hoursAssignee": {
+        "$sum": {
+          "$cond": [
+            {
+              "$eq": [
+                "$developer_name",
+                "marc.turu"
+              ]
+            },
+            "$total_hours",
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "hoursTotal": 1,
+      "hoursAssignee": 1
+    }
+  }
+]

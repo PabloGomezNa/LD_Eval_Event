@@ -1,0 +1,108 @@
+# app.py
+import threading
+from flask import Flask, request, jsonify
+import logging
+import os 
+
+from metrics_logic.metric_event_mapping import build_metrics_index_per_qm
+
+from factors_logic.factor_event_mapping import build_factors_index_per_qm
+from factors_logic.factor_recalculation import compute_factor, latest_metric_value
+
+from indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
+
+from utils.load_config_file import get_event_meta
+from utils.logger_setup import setup_logging
+from utils.StudentDatafromLDRESTAPI import build_team_students_map
+from utils.quality_model_config import load_qualitymodel_map, choose_qualitymodel
+
+
+from pymongo import MongoClient
+
+
+from utils.logger_setup import setup_logging
+import logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+
+
+
+QUALITY_MODELS_DIR = os.getenv("QUALITY_MODELS_DIR", "QUALITY_MODELS")
+
+app = Flask(__name__)
+
+# Build the metrics event map at startup scaning all the quality models metrics subfolders
+ALL_METRICS_BY_QM,  EVENT_METRICS_BY_QM  = build_metrics_index_per_qm(QUALITY_MODELS_DIR)
+
+# Build the metrics event map at startup scaning all the quality models factors subfolders
+ALL_FACTORS_BY_QM,  EVENT_FACTORS_BY_QM  = build_factors_index_per_qm(QUALITY_MODELS_DIR)
+
+# Build the metrics event map at startup scaning all the quality models indicators subfolders
+ALL_INDICATORS_BY_QM,  EVENT_INDICATORS_BY_QM  = build_indicators_index_per_qm(QUALITY_MODELS_DIR)
+
+# Build the team->students map at startup
+TEAM_STUDENTS_MAP = build_team_students_map()
+TEAM_QUALITYMODEL_MAP = load_qualitymodel_map()
+
+
+
+
+
+
+
+
+event_type = "task"
+external_id = "LD_TEST"
+quality_model="aws"
+#team_name = event_data.get("team_name")
+
+client = MongoClient("mongodb://localhost:27017")
+db = client["event_dashboard"]
+    
+meta = get_event_meta(event_type)
+logger.info(meta) #PUT THIS LATER IN DEBUG LEVEL
+
+
+
+
+data_source= meta["data_source"]
+students=TEAM_STUDENTS_MAP.get(external_id, {}).get(data_source, [])
+
+
+    
+# Retrieve the students for that team
+logger.info(f"Event={event_type}, team with external_id={external_id}, students={students}")
+
+# Retrieve the triggered metrics
+triggered_metrics = EVENT_METRICS_BY_QM.get(quality_model, {}).get(event_type, {})
+
+logger.info(f"Triggered metrics: {[m['name'] for m in triggered_metrics]}")
+
+
+
+# RECALCULTION OF THE FACTORS
+triggered_factors = EVENT_FACTORS_BY_QM.get(quality_model, {}).get(event_type, [])
+logger.info(f"Triggered factors: {[f['name'] for f in triggered_factors]}")
+        
+for factor_def in triggered_factors:
+    
+    print(factor_def)
+    values= {} # Empty dictionary to store the values for each metric in the factor
+    
+    for metrics in factor_def["metric"]:
+        #For each metric in the factor, we need to get the latest value for that metric
+        # We need to store these values in a dictionary with the metric name as key and the value as value
+        values[metrics] = latest_metric_value(external_id, metrics)
+    
+    logger.info(f"Values of the metrics of factor {factor_def['name']}: {values}")
+    final_val= compute_factor(factor_def, values, external_id)
+
+
+
+    # RECALCULTION OF THE INDICATORS
+    triggered_indicators = EVENT_INDICATORS_BY_QM.get(quality_model, {}).get(event_type, [])
+    logger.info(f"Triggered factors: {[f['name'] for f in triggered_indicators]}")
+
+

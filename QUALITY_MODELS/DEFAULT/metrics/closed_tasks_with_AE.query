@@ -1,0 +1,37 @@
+[
+  {
+    "$match": {
+      "is_closed": true,
+      "milestone_closed": false
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "closedTasksTotal": {
+        "$sum": 1
+      },
+      "closedTasksWithActualEffort": {
+        "$sum": {
+          "$cond": [
+            {
+              "$in": [
+                { "$type": "$custom_attributes.Actual Effort" },
+                ["int", "long", "double"]
+              ]
+            },
+            1,
+            0
+          ]
+        }
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "closedTasksTotal": 1,
+      "closedTasksWithActualEffort": 1
+    }
+  }
+]
