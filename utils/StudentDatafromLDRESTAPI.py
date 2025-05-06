@@ -2,7 +2,10 @@ import requests
 
 BASE_URL = "http://gessi-dashboard.essi.upc.edu:8888/api" 
 
-def fetch_projects():
+def fetch_projects() -> list:
+    '''
+    Retrieve the list of projects from the LD REST API.
+    '''
     url = f"{BASE_URL}/projects"
     response = requests.get(url, timeout=10)
     response.raise_for_status()  # Raise an exception if status != 200
@@ -11,18 +14,25 @@ def fetch_projects():
     
     return projects
 
-def fetch_project_details(project_id: int):
+def fetch_project_details(project_id: int) -> dict:
+    '''
+     Retrieve detailed information for a given project ID.
+    '''
     url = f"{BASE_URL}/projects/{project_id}"
     response = requests.get(url, timeout=10)
     response.raise_for_status()
     return response.json()
 
 
-def build_team_students_map():
-
+def build_team_students_map() -> dict:
+    '''
+    Build a mapping from project external_id to student identity lists.
+    '''
+    # Fetch all projects from the LD REST API
     projects = fetch_projects()
     team_students_map = {}
 
+    # Loop through each project and fetch its details
     for proj in projects:
         p_id = proj["id"]
         ext_id = proj["externalId"]  # e.g. "AMEP11Beats"
@@ -35,6 +45,7 @@ def build_team_students_map():
             continue
     
         subdict={}
+        names_list= []
     
         
         # details["students"] is an array of student objects
@@ -44,6 +55,12 @@ def build_team_students_map():
             continue
 
         for student_obj in students_list:
+            
+            student_name = student_obj.get("name")
+            if student_name:
+                names_list.append(student_name)
+            
+            
             identities = student_obj.get("identities", {})
             # e.g. identities => {"GITHUB": {"username":"danipenalba"}, "TAIGA": {...}, "GITLAB": {...}}
 
@@ -56,6 +73,7 @@ def build_team_students_map():
                         subdict[data_source_name] = []
                     subdict[data_source_name].append(username)
 
+        subdict["EXCEL"] = names_list
         team_students_map[ext_id] = subdict
 
 
@@ -75,7 +93,8 @@ def build_team_students_map():
     
     team_students_map["LD_TEST"] = {
         "GITHUB": ["PabloGomezNa", "PepitoGomezNa", "charlie"],
-        "TAIGA": ["pgomezn", "pablogz5", "Charlie55"]
+        "TAIGA": ["pgomezn", "pablogz5", "Charlie55"],
+        "EXCEL": ["Pablo", "Marc", "Charlie"]
     }
 
 

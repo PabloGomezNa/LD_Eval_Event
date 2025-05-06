@@ -1,24 +1,15 @@
-
-import os
-from collections import defaultdict
 from utils.quality_model_loader import scan_quality_model_folder
 
 
-def load_required_fields_factor(filepath):
+def load_required_fields_factor(filepath: str) -> dict:
     """
-    Reads some keys from the .properties metrics files. Returns a dict with those fields
-    if found, ignoring everything else.
-    
-    I THINK WE CAN DELETE ALL THE PARAMS LOGIC, AS IN INDICATOR AND FACTORS WE WONT HAVE
-    
-    
-    
-    ALSO DELTE THE FACTORS AS WE CAN GET AND USE THE NAME OF THE FILE
+    Reads some allowed keys from the .properties factor files. Returns a dict with those fields. 
     """ 
-    
+    # Allowed keys for the factor properties
     allowed_keys = {'name', 'description','metric','formula','weights','relatedEvent'}
     props = {}
     params = {}
+    # Read each line, skip comments and blank lines
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
@@ -30,9 +21,11 @@ def load_required_fields_factor(filepath):
             key = key.strip()
             value = value.strip()
 
+            # Capture only allowed keys
             if key in allowed_keys:
                 props[key] = value
 
+            # Capture any param. entries into params dict
             elif key.startswith('param.'):
                 raw = value.strip() #Get the value of the parameter
                 try:                     # turn to int/float if we can
@@ -41,14 +34,17 @@ def load_required_fields_factor(filepath):
                     val = raw
    
                 params[key[6:]] = val
-                
+        # Attach params if present       
         if params:
             props['params'] = params
                 
     return props
 
 
-def build_factor_def(props, qm, path):
+def build_factor_def(props: dict, qm: str, path: str) -> dict:
+    '''
+    Builds a factor definition from the loaded properties file.
+    '''
     return {
         "filePath": path,
         "name": props["name"],
@@ -60,6 +56,9 @@ def build_factor_def(props, qm, path):
     }
 
 def build_factors_index_per_qm(qm_root="QUALITY_MODELS"):
+    '''
+    Scan all quality-model subfolders for factor definitions.
+    '''
     return scan_quality_model_folder(
         qm_root,
         subfolder="factors",
@@ -67,51 +66,3 @@ def build_factors_index_per_qm(qm_root="QUALITY_MODELS"):
         build_def=build_factor_def
     )
     
-    
-
-# def build_factors_index_per_qm(factors_root='factors'):
-#     """Return: (ALL_FACTORS, EVENT_TO_FACTORS)"""
-    
-    
-#     all_by_qm   = {}
-#     event_by_qm = {}
-
-#     # Loop trough all the subfolders of factors_root
-#     for qm in os.listdir(factors_root):
-#         full_dir = os.path.join(factors_root, qm)
-#         if not os.path.isdir(full_dir):
-#             continue    # if we find anything that is not a folder, we skip it
-
-#         factors_list = []
-#         evt_map = defaultdict(list)
-
-#         # Search for all the .properties files in the folder and subfolders
-#         for root, _, files in os.walk(full_dir):
-#             for fname in files:
-#                 if not fname.endswith('.properties'):
-#                     continue
-#                 full_path = os.path.join(root, fname)
-#                 props = load_required_fields_factor(full_path)
-
-#                 # Define the factor
-#                 fdef = {
-#                     'filePath'     : full_path,
-#                     'name'         : props['name'],
-#                     'description'  : props.get('description', ''),
-#                     'metric'       : [m.strip() for m in props.get('metric', '').split(',') if m.strip()],
-#                     'operation'    : props.get('operation', 'average'),
-#                     'weights'      : [w.strip() for w in props.get('weights', '').split(',') if w.strip()],
-#                     'quality_model': qm.lower(),
-#                 }
-#                 factors_list.append(fdef)
-
-#                 # Map the event to the factor
-#                 for evt in props.get('relatedEvent', '').split(','):
-#                     evt = evt.strip()
-#                     if evt:
-#                         evt_map[evt].append(fdef)
-
-#         all_by_qm[qm.lower()]   = factors_list
-#         event_by_qm[qm.lower()] = dict(evt_map)
-
-#     return all_by_qm, event_by_qm

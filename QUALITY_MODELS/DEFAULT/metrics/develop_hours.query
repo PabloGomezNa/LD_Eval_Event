@@ -5,8 +5,8 @@
       "hoursTotal": {
         "$sum": "$total_hours"
       },
-      "hoursLearn": {
-        "$sum": "$f_hours"
+      "hoursDev": {
+        "$sum": "$hours_Desenvolupament"
       }
     }
   },
@@ -14,7 +14,7 @@
     "$project": {
       "_id": 0,
       "hoursTotal": 1,
-      "hoursLearn": 1
+      "hoursDev": 1
     }
   }
 ]

@@ -7,14 +7,13 @@
       },
       "hoursAssignee": {
         "$sum": {
-          "$cond": [
+          "$ifNull": [
             {
-              "$eq": [
-                "$developer_name",
-                "javier.abella"
-              ]
+              "$getField": {
+                "field": { "$concat": ["hours_", "$$studentUser"] },
+                "input": "$$ROOT"
+              }
             },
-            "$total_hours",
             0
           ]
         }

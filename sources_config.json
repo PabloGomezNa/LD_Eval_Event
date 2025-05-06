@@ -21,5 +21,10 @@
   "userstory": {
     "data_source": "TAIGA",
     "collection_suffix": "userstories"
+  },
+
+  "sheets_activity": {
+    "data_source": "EXCEL",
+    "collection_suffix": "sheets"
   }
 }

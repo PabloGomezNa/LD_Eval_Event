@@ -7,6 +7,10 @@ import os
 from metrics_logic.metric_event_mapping import build_metrics_index_per_qm
 
 from factors_logic.factor_event_mapping import build_factors_index_per_qm
+
+from metrics_logic.metric_event_mapping import build_metrics_index_per_qm
+from metrics_logic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
+
 from factors_logic.factor_recalculation import compute_factor, latest_metric_value
 
 from indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
@@ -47,15 +51,15 @@ TEAM_STUDENTS_MAP = build_team_students_map()
 TEAM_QUALITYMODEL_MAP = load_qualitymodel_map()
 
 
+print(TEAM_STUDENTS_MAP)
 
 
 
 
 
-
-event_type = "task"
+event_type = "sheets_activity"
 external_id = "LD_TEST"
-quality_model="aws"
+quality_model="wow"
 #team_name = event_data.get("team_name")
 
 client = MongoClient("mongodb://localhost:27017")
@@ -82,6 +86,18 @@ logger.info(f"Triggered metrics: {[m['name'] for m in triggered_metrics]}")
 
 
 
+# Recompute each metric
+for metric_def in triggered_metrics:
+    scope = metric_def["scope"]
+    if scope == "individual":
+        for student_name in students:
+            compute_metric_for_student(metric_def, event_type, student_name, team_name=external_id)
+    elif scope == "team":  # scope == "team"
+        compute_metric_for_team(metric_def, event_type, team_name=external_id,students=students)
+    else: #scope == "individual_only"
+        compute_metric_for_student(metric_def, event_type, author_name, team_name=external_id)
+    
+
 # RECALCULTION OF THE FACTORS
 triggered_factors = EVENT_FACTORS_BY_QM.get(quality_model, {}).get(event_type, [])
 logger.info(f"Triggered factors: {[f['name'] for f in triggered_factors]}")
@@ -96,13 +112,30 @@ for factor_def in triggered_factors:
         # We need to store these values in a dictionary with the metric name as key and the value as value
         values[metrics] = latest_metric_value(external_id, metrics)
     
+    print(values)
     logger.info(f"Values of the metrics of factor {factor_def['name']}: {values}")
-    final_val= compute_factor(factor_def, values, external_id)
+    final_val= compute_factor(external_id, factor_def, values)
 
 
 
-    # RECALCULTION OF THE INDICATORS
-    triggered_indicators = EVENT_INDICATORS_BY_QM.get(quality_model, {}).get(event_type, [])
-    logger.info(f"Triggered factors: {[f['name'] for f in triggered_indicators]}")
+# RECALCULTION OF THE INDICATORS
+triggered_indicators = EVENT_INDICATORS_BY_QM.get(quality_model, {}).get(event_type, [])
+logger.info(f"Triggered factors: {[f['name'] for f in triggered_indicators]}")
 
+
+from indicators_logic.indicator_recalculation import compute_indicator, latest_factor_value
+for indicator_def in triggered_indicators:
+    
+    print(indicator_def)
+    indicator_values= {} # Empty dictionary to store the values for each metric in the factor
+    
+    for factors in indicator_def["factor"]:
+        print(f"FACTORS{factors}")
+        #For each metric in the factor, we need to get the latest value for that metric
+        # We need to store these values in a dictionary with the metric name as key and the value as value
+        indicator_values[factors] = latest_factor_value(external_id, factors)
+    
+    print(indicator_values)
+    logger.info(f"Values of the factors of indicator {indicator_def['name']}: {indicator_values}")
+    final_val_indicator= compute_indicator(external_id, indicator_def, indicator_values)
 

@@ -1,5 +1,3 @@
-# app.py
-
 import threading
 from flask import Flask, request, jsonify
 import logging
@@ -91,34 +89,33 @@ def background_process_event(event_data):
     logger.info(f"Triggered factors: {[f['name'] for f in triggered_factors]}")
         
     for factor_def in triggered_factors:
-        values= {} # Empty dictionary to store the values for each metric in the factor
+        factor_values= {} # Empty dictionary to store the values for each metric in the factor
         
         for metrics in factor_def["metric"]:
             #For each metric in the factor, we need to get the latest value for that metric
             # We need to store these values in a dictionary with the metric name as key and the value as value
-            values[metrics] = latest_metric_value(external_id, metrics)
+            factor_values[metrics] = latest_metric_value(external_id, metrics)
         
-        logger.info(f"Values of the metrics of factor {factor_def['name']}: {values}")
-        final_val= compute_factor(factor_def, values, external_id)
+        logger.info(f"Values of the metrics of factor {factor_def['name']}: {factor_values}")
+        final_value_factors= compute_factor(external_id, factor_def, factor_values)
 
 
 
     # RECALCULTION OF THE INDICATORS
     triggered_indicators = EVENT_INDICATORS_BY_QM.get(quality_model, {}).get(event_type, [])
     logger.info(f"Triggered factors: {[f['name'] for f in triggered_indicators]}")
-    # logger.info(f"Triggered indicators: {[i['name'] for i in triggered_indicators]}")
+    logger.info(f"Triggered indicators: {[i['name'] for i in triggered_indicators]}")
         
-    # for indicator_def in triggered_indicators:
-    #     values= {} # Empty dictionary to store the values for each metric in the factor
+    for indicator_def in triggered_indicators:
+        indicator_values= {} # Empty dictionary to store the values for each metric in the factor
         
-    #     for factor in indicator_def["factor"]:
-    #         #For each metric in the factor, we need to get the latest value for that metric
-    #         # We need to store these values in a dictionary with the metric name as key and the value as value
-    #         values[indicator] = latest_factor_value(external_id, factor)
+        for factors in indicator_def["factor"]:
+            #For each metric in the factor, we need to get the latest value for that metric
+            # We need to store these values in a dictionary with the metric name as key and the value as value
+            indicator_values[factors] = latest_factor_value(external_id, factors)
         
-    #     logger.info(f"Values of the factor of indicator {indicator_def["name"]}: {values}")
-    #     final_val= compute_indicator(indicator_def, values, external_id)
-
+        logger.info(f"Values of the factor of indicator {indicator_def["name"]}: {indicator_values}")
+        final_value_indicator= compute_indicator(external_id, indicator_def, indicator_values)
     
     logger.info("Done processing event.")
 

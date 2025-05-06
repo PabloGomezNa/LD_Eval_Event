@@ -1,4 +1,3 @@
-# metriclogic/placeholders.py
 import json
 
 def load_query_template(query_file, param_map=None) -> dict:
