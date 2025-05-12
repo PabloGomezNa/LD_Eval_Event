@@ -1,5 +1,5 @@
 from utils.quality_model_loader import scan_quality_model_folder
-
+from config.settings import QUALITY_MODELS_DIR
 
 def load_required_fields_factor(filepath: str) -> dict:
     """
@@ -55,7 +55,7 @@ def build_factor_def(props: dict, qm: str, path: str) -> dict:
         "quality_model": qm,
     }
 
-def build_factors_index_per_qm(qm_root="QUALITY_MODELS"):
+def build_factors_index_per_qm(qm_root=QUALITY_MODELS_DIR):
     '''
     Scan all quality-model subfolders for factor definitions.
     '''

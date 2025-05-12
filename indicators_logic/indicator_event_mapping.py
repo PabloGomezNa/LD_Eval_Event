@@ -1,6 +1,5 @@
-import os
-from collections import defaultdict
 from utils.quality_model_loader import scan_quality_model_folder
+from config.settings import QUALITY_MODELS_DIR
 
 
 def load_required_fields_indicator(filepath: str) -> dict:
@@ -54,7 +53,7 @@ def build_indicator_def(props: dict, qm: str, path: str) -> dict:
         "quality_model": qm,
     }
 
-def build_indicators_index_per_qm(qm_root="QUALITY_MODELS"):
+def build_indicators_index_per_qm(qm_root=QUALITY_MODELS_DIR):
     '''
     Scan all quality-model subfolders for indicator definitions.
     '''

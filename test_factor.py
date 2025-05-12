@@ -57,9 +57,11 @@ print(TEAM_STUDENTS_MAP)
 
 
 
-event_type = "sheets_activity"
-external_id = "LD_TEST"
-quality_model="wow"
+event_type = "task"
+external_id = "LD_TEST_2"
+
+# No funciona en mayusculas, solo en minusculas
+quality_model="aws"
 #team_name = event_data.get("team_name")
 
 client = MongoClient("mongodb://localhost:27017")

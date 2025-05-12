@@ -1,5 +1,6 @@
-# utils/quality_model_config.py
 import json
+from typing import Optional
+
 
 def load_qualitymodel_map(path: str = "quality_models_teams_config.json") -> dict:
     '''
@@ -11,7 +12,7 @@ def load_qualitymodel_map(path: str = "quality_models_teams_config.json") -> dic
     return {team: qm.lower() for qm, teams in raw.items() for team in teams}
 
 
-def choose_qualitymodel(external_id: str, explicit_qm: str | None, qm_map: dict) -> str:
+def choose_qualitymodel(external_id: str, explicit_qm: Optional[str], qm_map: dict) -> str:
     '''
     Decide which quality model to use for a project. Either the one specified in the event or the one from the config file.
     '''

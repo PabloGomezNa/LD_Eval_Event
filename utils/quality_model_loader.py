@@ -1,8 +1,6 @@
 import os
 from collections import defaultdict
   
-
-
 def scan_quality_model_folder(root_dir, subfolder, props_loader, build_def):
     """
     Scanner for quality-model directories.

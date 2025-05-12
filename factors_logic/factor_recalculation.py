@@ -1,13 +1,13 @@
 from factors_logic.store_factors_mongo import store_factor_result
-from pymongo import MongoClient
+from database.mongo_client import get_collection
+
 
 def latest_metric_value(team: str, metric_name: str, student: str = None)-> list:
     '''
     Retrieve the latest metric value(s) from MongoDB for a given metric.
     '''
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
-    coll = db[f"{team}_metrics"]
+
+    coll = get_collection(f"{team}_metrics")
     
     # Try finding any document for this metric
     doc = coll.find_one({'metric': metric_name})
@@ -39,7 +39,7 @@ def compute_factor(team_name: str, factor_def: dict, values_dict: dict)-> tuple:
     Compute a factor's final value based on its constituent metric values.
     Supports 'average' and 'weighted_average' operations.
     """
-    # We will create a flat list of values, and a parallel list of metric names and students
+    # Loop over the values_dict to get the values, the metric names and students
     flat_vals   = []
     flat_metric = []          
     flat_student = []       
@@ -58,7 +58,7 @@ def compute_factor(team_name: str, factor_def: dict, values_dict: dict)-> tuple:
     # Get the operation to be performed from the factor definition
     op = factor_def.get('formula', 'average')
 
-    # Calculate the final value based on the average
+    # Calculate the final value based on the weighted average
     if op == 'average':
         final_val = sum(flat_vals)/len(flat_vals)
         info = f"avg({flat_vals})"

@@ -1,5 +1,5 @@
 from utils.quality_model_loader import scan_quality_model_folder
-
+from config.settings import QUALITY_MODELS_DIR
 
 def load_required_fields_metrics(filepath: str)-> dict:
     """
@@ -56,7 +56,7 @@ def build_metric_def(props: dict, qm: str, path: str) -> dict:
         "quality_model": qm,
     }
 
-def build_metrics_index_per_qm(qm_root="QUALITY_MODELS")-> dict:
+def build_metrics_index_per_qm(qm_root=QUALITY_MODELS_DIR)-> dict:
     '''
     Scans the quality model folder and builds a dictionary with the metrics found in each quality model.
     '''

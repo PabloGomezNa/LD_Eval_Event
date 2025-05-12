@@ -1,4 +1,7 @@
-import json, os
+import os
+import json
+from typing import Optional, Dict
+
 
 def load_sources_config()-> dict:
     '''
@@ -12,7 +15,7 @@ def load_sources_config()-> dict:
 
 
 
-def get_event_meta(event_type: str) -> dict | None:
+def get_event_meta(event_type: str) -> Optional[Dict]:
     '''
     Retrieve metadata for a given event type from sources_config.
     '''       

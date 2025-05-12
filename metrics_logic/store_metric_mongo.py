@@ -1,20 +1,18 @@
-from pymongo import MongoClient
+import os 
 from datetime import datetime
 from zoneinfo import ZoneInfo
-import os
-
+from database.mongo_client import get_collection
 
 #def store_metric_result(team_name: str, metric_name: str, scope: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
 def store_metric_result(team_name: str, metric_def: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
     '''
     Insert a metric result into the MongoDB database.
     '''
-    # Sets the collection name to the team name + "_metrics"     
     collection_name = f"{team_name}_metrics"
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
+    # Sets the collection name to the team name + "_metrics" 
+    collection = get_collection(collection_name)
     # Sets the evaluation date to the current date and time in the Europe/Madrid timezone
-    evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d,%H:%M:%S")
+    evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
     
     # Metric label, its the name .properties file, for instance task_effort.properties metric, the name is task_effort
     full_path = metric_def["filePath"]
@@ -38,24 +36,40 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
     info_lines.append(f"value: {final_val}")
     info = "\n".join(info_lines)
 
-    # Final Mongo document to be inserted
-    doc = {
-        "_id":           doc_id,
-        "description":   metric_def.get("description", ""),
-        "evaluationDate": evaluation_date,
-        "info":          info,
-        "metric":        metric_label,
-        "name":          metric_def["name"],
-        "project":       team_name,
-        "source":        f"mongodb:27017/mongo.{collection_name}",
-        "type":          "metrics",
-        "value":         final_val,
-        "weights":       metric_def.get("weights", []),
-        "scope":         "individual" if student_name else "team",
-        "event_type":    event_type,
+
+
+    # Part of the mongo document that does not change
+    static = {
+        "name"         : metric_def['name'],
+        "description"  : metric_def['description'],
+        "project"      : team_name,
+        "metric"       : metric_label,
+        "source"      : f"mongodb:27017/mongo.{collection_name}",
+        "type"         : "metrics",
+        "weights"      : metric_def.get("weights", []),
+        "scope"        : "individual" if student_name else "team",
+        "event_type"   : event_type,
     }
     if student_name:    # If the metric is for a student, add the student name to the document
-        doc["student_name"] = student_name
-        
-    # Insert into MongoDB
-    db[collection_name].insert_one(doc)
+        static["student_name"] = student_name
+
+    # Part of the mongo document that will change each time there is an event
+    dynamic = {
+        "evaluationDate": evaluation_date,
+        "value"        : final_val,
+        "info"         : info_lines
+    }
+    
+ 
+     # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
+    collection.update_one(
+        {"_id": doc_id},
+        {
+            "$set": dynamic,
+            "$setOnInsert": static
+            },
+        upsert=True        
+        )
+    
+    
+    

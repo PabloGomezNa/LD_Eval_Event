@@ -1,6 +1,6 @@
-import logging
 import os
 import sys
+import logging
 
 _DEFAULT_FMT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 

@@ -1,17 +1,15 @@
 from indicators_logic.store_indicator_mongo import store_indicator_result
-from pymongo import MongoClient
+from database.mongo_client import get_collection
 
 def latest_factor_value(team, factor_name, student=None):
     '''
     Retrieve the latest factor value(s) from MongoDB for a given metric.
     '''
     
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
-    coll = db[f"{team}_metrics"]
-    
+
+    # Sets the collection name to the team name + "_factors"
+    coll = get_collection(f"{team}_factors")
     # Try finding any document for this factor
-    coll = db[f"{team}_factors"]    
     doc = coll.find_one({'factor': factor_name})
         
     #if no document found, return empty list

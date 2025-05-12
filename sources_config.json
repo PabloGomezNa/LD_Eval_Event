@@ -3,6 +3,12 @@
     "data_source": "GITHUB",
     "collection_suffix": "commits"
   },
+  
+  "pull_request": {
+    "data_source": "GITHUB",
+    "collection_suffix": "pull_requests"
+  }
+  ,
 
   "issue": {
     "data_source": "TAIGA",
@@ -18,6 +24,7 @@
     "data_source": "TAIGA",
     "collection_suffix": "epics"
   },
+  
   "userstory": {
     "data_source": "TAIGA",
     "collection_suffix": "userstories"

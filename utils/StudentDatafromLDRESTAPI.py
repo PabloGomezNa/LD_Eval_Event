@@ -1,12 +1,12 @@
 import requests
+from config.settings import BASE_GESSI_URL
 
-BASE_URL = "http://gessi-dashboard.essi.upc.edu:8888/api" 
 
 def fetch_projects() -> list:
     '''
     Retrieve the list of projects from the LD REST API.
     '''
-    url = f"{BASE_URL}/projects"
+    url = f"{BASE_GESSI_URL}/projects"
     response = requests.get(url, timeout=10)
     response.raise_for_status()  # Raise an exception if status != 200
     projects = response.json()
@@ -18,7 +18,7 @@ def fetch_project_details(project_id: int) -> dict:
     '''
      Retrieve detailed information for a given project ID.
     '''
-    url = f"{BASE_URL}/projects/{project_id}"
+    url = f"{BASE_GESSI_URL}/projects/{project_id}"
     response = requests.get(url, timeout=10)
     response.raise_for_status()
     return response.json()

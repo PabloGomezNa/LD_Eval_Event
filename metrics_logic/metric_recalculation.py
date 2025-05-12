@@ -1,12 +1,10 @@
-# metriclogic/recalc.py
-
 import os
-from pymongo import MongoClient
 from metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
 from metrics_logic.store_metric_mongo import store_metric_result
 from metrics_logic.run_mogo_query import run_mongo_query_for_metric, evaluate_formula
 from statistics import pstdev
 
+from database.mongo_client import get_collection
 from utils.load_config_file import get_event_meta
 from utils.logger_setup import setup_logging
 import logging
@@ -66,6 +64,7 @@ def compute_metric_for_team(metric_def: dict, event_type: str, team_name: str,st
     
     
     collection_name = f"{team_name}_{meta['collection_suffix']}"  
+    collection = get_collection(collection_name)
     basepath = os.path.splitext(metric_def["filePath"])[0]
     query_file = basepath + ".query"
     formula_str = metric_def["formula"]
@@ -89,11 +88,11 @@ def compute_metric_for_team(metric_def: dict, event_type: str, team_name: str,st
         pipeline = replace_placeholders_in_query(pipeline, param_map)
 
         
-        client = MongoClient("mongodb://localhost:27017")
-        db = client["event_dashboard"]
-        results = list(db[collection_name].aggregate(pipeline))
-        logger.debug(f"pipeline: {pipeline}") #REMOVED LATER, ONLY TO LOG
-        logger.debug(f"db collection name: {collection_name}") #REMOVED LATER, ONLY TO LOG
+
+        results = list(collection.aggregate(pipeline))
+        
+        logger.debug(f"pipeline: {pipeline}") 
+        logger.debug(f"db collection name: {collection_name}") 
         logger.debug(f"Results from aggregator: {results}")
 
 
@@ -122,6 +121,7 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
     query_file = basepath + ".query"
     logger.info(f"Recomputing metric '{metric_def['name']}' for team with external_id='{team_name}'")
 
+    collection= get_collection(collection_name)
 
     # Load and substitute the placeholders in the query template
     param_map={} #Empty param map as we are not using any placeholders in any team query
@@ -131,9 +131,8 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
     
     #Load the query template
     pipeline = load_query_template(query_file, param_map) 
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
-    docs = list(db[collection_name].aggregate(pipeline))
+
+    docs = list(collection.aggregate(pipeline))
     logger.debug(f"Aggregator results: {docs}")
 
     # Build the aggregator map from the results

@@ -1,7 +1,6 @@
 import threading
 from flask import Flask, request, jsonify
 import logging
-import os 
 
 from metrics_logic.metric_event_mapping import build_metrics_index_per_qm
 from metrics_logic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
@@ -17,13 +16,13 @@ from utils.logger_setup import setup_logging
 from utils.StudentDatafromLDRESTAPI import build_team_students_map
 from utils.quality_model_config import load_qualitymodel_map, choose_qualitymodel
 
+from config.settings import QUALITY_MODELS_DIR
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
 
 
-QUALITY_MODELS_DIR = os.getenv("QUALITY_MODELS_DIR", "QUALITY_MODELS")
 
 app = Flask(__name__)
 
@@ -114,10 +113,11 @@ def background_process_event(event_data):
             # We need to store these values in a dictionary with the metric name as key and the value as value
             indicator_values[factors] = latest_factor_value(external_id, factors)
         
-        logger.info(f"Values of the factor of indicator {indicator_def["name"]}: {indicator_values}")
+        logger.info(f"Values of the factor of indicator {indicator_def['name']}: {indicator_values}")
         final_value_indicator= compute_indicator(external_id, indicator_def, indicator_values)
     
     logger.info("Done processing event.")
+
 
 
 
@@ -142,3 +142,14 @@ def run_app():
     # Runs the Flask app
     app.run(host="0.0.0.0", port=5001, debug=True)
 
+
+
+def create_app():
+    """
+    Create and configure the Flask application.
+    """
+    return app     # ← la variable que ya tienes arriba
+
+if __name__ == "__main__":
+    # Run the app directly
+    run_app()

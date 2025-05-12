@@ -1,20 +1,20 @@
-from pymongo import MongoClient
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
+
+from database.mongo_client import get_collection
 
 
 def store_factor_result(team_name:str, factor_def: dict, final_value: float, intermediate_metric_values: dict)-> None:
     '''
     Insert a indicator result into the MongoDB database under a certain collection name.
     '''
-    # Sets the collection name to the team name + "_indicators"
-    collection_name = f"{team_name}_factors"
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
+    # Sets the collection name to the team name + "_indicators"   
+    collection = get_collection(f"{team_name}_factors")
 
     # Sets the evaluation date to the current date and time in the Europe/Madrid timezone
-    evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d,%H:%M:%S")
+   #evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d,%H:%M:%S")
+    evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
 
     # Factor label, its the name .properties file, for instance task_effort.properties metric, the name is task_effort
     full_path = factor_def["filePath"]
@@ -22,7 +22,7 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
     factor_label = os.path.splitext(filename)[0]
     
     # Build a unique _id: team-factorName-timestamp
-    _id_parts = [team_name, factor_def['name'], evaluation_date]
+    _id_parts = [team_name, factor_label, evaluation_date]
 
     # Compose info string: list each (student or metric, value, weights)
     metric_info_parts = []
@@ -37,18 +37,31 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
     
     info_lines = f"metrics:{ {metric_info} }, formula: {factor_def['formula']}, value: {final_value}"
     
-    # Final Mongo document to be inserted
-    doc = {
-        "_id"          : "-".join(_id_parts),
+
+    # Part of the mongo document that does not change
+    static = {
         "name"         : factor_def['name'],
         "description"  : factor_def['description'],
         "project"      : team_name,
-        "evaluationDate": evaluation_date,
         "factor"       : factor_label,
-        "info"         : info_lines, 
-        "value"        : final_value,
     }
-     # Insert into MongoDB
-    db[collection_name].insert_one(doc)
+
+    # Part of the mongo document that will change each time there is an event
+    dynamic = {
+        "evaluationDate": evaluation_date,
+        "value"        : final_value,
+        "info"         : info_lines
+    }
+    
+ 
+     # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
+    collection.update_one(
+        {"_id": "_".join(_id_parts)},
+        {
+            "$set": dynamic,
+            "$setOnInsert": static
+            },
+        upsert=True        
+        )
 
 

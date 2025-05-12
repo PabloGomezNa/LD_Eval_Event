@@ -1,9 +1,9 @@
-from pymongo import MongoClient
 from metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
 from utils.load_config_file import get_event_meta
 from utils.logger_setup import setup_logging
-import logging
+from database.mongo_client import get_collection
 
+import logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
@@ -71,9 +71,9 @@ def run_mongo_query_for_metric(team_name: str, student_name: str, query_file: st
     
 
     # connect to mongo, run the pipeline
-    client = MongoClient("mongodb://localhost:27017")
-    db = client["event_dashboard"]
-    cursor = db[collection_name].aggregate(pipeline)
+    
+    collection = get_collection(collection_name) #get the collection from the mongo client
+    cursor = collection.aggregate(pipeline)
     results = list(cursor)
     logger.info(f"Results: {results}") #REMOVED LATER, ONLY TO LOG
 
