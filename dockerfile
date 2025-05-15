@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5001
 
 # Run gunicorn for  "app:create_app()" factory function
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "4", "app:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "4", "threads", "25" "app:create_app()"]

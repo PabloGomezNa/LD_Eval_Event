@@ -1,0 +1,20 @@
+
+services:
+  LD_connect:
+    build:
+      context: ./docker/LDEVAL        
+      dockerfile: Dockerfile
+    container_name: ldeval
+    env_file:
+      - ./docker/LDEVAL/.env         
+    networks:
+      - qrapids                 
+    depends_on:
+      mongodb:                   
+        condition: service_started
+    ports:
+      - "127.0.0.1:5001:5001"    
+
+networks:
+  qrapids:
+    external: true              
