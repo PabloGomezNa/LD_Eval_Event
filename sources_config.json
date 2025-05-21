@@ -1,0 +1,37 @@
+{
+  "push": {
+    "data_source": "GITHUB",
+    "collection_suffix": "commits"
+  },
+  
+  "pull_request": {
+    "data_source": "GITHUB",
+    "collection_suffix": "pull_requests"
+  }
+  ,
+
+  "issue": {
+    "data_source": "TAIGA",
+    "collection_suffix": "issues"
+  },
+
+  "task": {
+    "data_source": "TAIGA",
+    "collection_suffix": "tasks"
+  },
+
+  "epic": {
+    "data_source": "TAIGA",
+    "collection_suffix": "epics"
+  },
+  
+  "userstory": {
+    "data_source": "TAIGA",
+    "collection_suffix": "userstories"
+  },
+
+  "sheets_activity": {
+    "data_source": "EXCEL",
+    "collection_suffix": "sheets"
+  }
+}

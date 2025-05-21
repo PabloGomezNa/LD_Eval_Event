@@ -1,0 +1,13 @@
+[
+  {
+    "$match": {
+      "user.login": { "$ne": "anonymous" }
+    }
+  },
+  {
+    "$group": {
+      "_id": "$user.login",
+      "count": { "$sum": 1 }
+    }
+  }
+]

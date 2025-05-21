@@ -1,0 +1,15 @@
+[
+  {
+    "$match": {
+      "assigned_to": {
+        "$ne": null
+      }
+    }
+  },
+  {
+      "$group": {
+        "_id": "$assigned_to",
+        "count": { "$sum": 1 }
+      }
+  }
+]

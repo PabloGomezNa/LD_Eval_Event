@@ -1,0 +1,4 @@
+{
+    "aws":     ["LDTestOrganization", "LD_AWS_TEAM2"],
+    "amep":    ["LD_Test_Project"]
+  }
