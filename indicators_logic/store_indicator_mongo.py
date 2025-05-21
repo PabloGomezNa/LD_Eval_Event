@@ -9,7 +9,7 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
     Insert a indicator result into the MongoDB database under a certain collection name.
     '''
     # Sets the collection name to the team name + "_indicators"       
-    collection= get_collection(f"{team_name}_indicators")
+    collection= get_collection(f"strategic_indicators.{team_name}")
 
     # Sets the evaluation date to the current date and time in the Europe/Madrid timezone
     evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
@@ -38,9 +38,10 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
         # Part of the mongo document that does not change
     static = {
         "name"         : indicator_def['name'],
+        "datasource"  : "QRapids Dashboard",
         "description"  : indicator_def['description'],
         "project"      : team_name,
-        "indicator"       : indicator_label,
+        "strategic_indicator"       : indicator_label,
     }
 
     # Part of the mongo document that will change each time there is an event

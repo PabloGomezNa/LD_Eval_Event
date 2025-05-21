@@ -1,19 +1,29 @@
 
 services:
-  LD_connect:
+  ld_eval:
     build:
-      context: ./docker/LDEVAL        
+      context: ./        
       dockerfile: Dockerfile
     container_name: ldeval
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/ld 
     env_file:
-      - ./docker/LDEVAL/.env         
+      - ./.env         
     networks:
       - qrapids                 
-    depends_on:
-      mongodb:                   
-        condition: service_started
+    depends_on: [mongodb]
     ports:
       - "127.0.0.1:5001:5001"    
+
+  mongodb:
+    image: mongo:7.0
+    volumes: [ "mongo_data:/data/db" ]
+    ports: ["27017:27017"]
+    networks: [qrapids]
+
+
+volumes:
+  mongo_data:
 
 networks:
   qrapids:

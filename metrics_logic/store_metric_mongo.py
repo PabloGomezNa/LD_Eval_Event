@@ -8,7 +8,7 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
     '''
     Insert a metric result into the MongoDB database.
     '''
-    collection_name = f"{team_name}_metrics"
+    collection_name = f"metrics.{team_name}"
     # Sets the collection name to the team name + "_metrics" 
     collection = get_collection(collection_name)
     # Sets the evaluation date to the current date and time in the Europe/Madrid timezone

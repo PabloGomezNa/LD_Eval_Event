@@ -7,7 +7,7 @@ def latest_metric_value(team: str, metric_name: str, student: str = None)-> list
     Retrieve the latest metric value(s) from MongoDB for a given metric.
     '''
 
-    coll = get_collection(f"{team}_metrics")
+    coll = get_collection(f"metrics.{team}")
     
     # Try finding any document for this metric
     doc = coll.find_one({'metric': metric_name})

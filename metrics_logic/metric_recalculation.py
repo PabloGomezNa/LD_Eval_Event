@@ -63,7 +63,8 @@ def compute_metric_for_team(metric_def: dict, event_type: str, team_name: str,st
     logger.debug(f"Event meta: {meta}")
     
     
-    collection_name = f"{team_name}_{meta['collection_suffix']}"  
+    collection_name= f"{meta['data_source'].lower()}_{team_name}.{meta['collection_suffix']}"  
+    print(f"Collection name: {collection_name}")
     collection = get_collection(collection_name)
     basepath = os.path.splitext(metric_def["filePath"])[0]
     query_file = basepath + ".query"

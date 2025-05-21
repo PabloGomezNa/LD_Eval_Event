@@ -58,7 +58,7 @@ def run_mongo_query_for_metric(team_name: str, student_name: str, query_file: st
         logger.warning(f"Event type '{event_type}' not found in meta data.")
         return
     
-    collection_name = f"{team_name}_{meta['collection_suffix']}"  
+    collection_name= f"{meta['data_source'].lower()}_{team_name}.{meta['collection_suffix']}"  
     
 
     # load the aggregator pipeline from the .query file    

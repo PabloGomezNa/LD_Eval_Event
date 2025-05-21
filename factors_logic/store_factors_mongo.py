@@ -10,7 +10,7 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
     Insert a indicator result into the MongoDB database under a certain collection name.
     '''
     # Sets the collection name to the team name + "_indicators"   
-    collection = get_collection(f"{team_name}_factors")
+    collection = get_collection(f"factors.{team_name}")
 
     # Sets the evaluation date to the current date and time in the Europe/Madrid timezone
    #evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d,%H:%M:%S")

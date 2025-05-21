@@ -8,7 +8,7 @@ def latest_factor_value(team, factor_name, student=None):
     
 
     # Sets the collection name to the team name + "_factors"
-    coll = get_collection(f"{team}_factors")
+    coll = get_collection(f"factors.{team}")
     # Try finding any document for this factor
     doc = coll.find_one({'factor': factor_name})
         
