@@ -25,10 +25,18 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
         id_parts.insert(2, student_name)           # add between team & date
     doc_id = "-".join(id_parts)
 
+
+# just abans de construir info_lines:
+    if student_name:
+        query_props = { 'studentUser': student_name }
+    else:
+        query_props = {}
+
+    
     # Compose the info block, with parameters and formula
     info_lines = [
         f"parameters: {{evaluationDate={evaluation_date}}}",
-        f"query-properties: {metric_def['params']}",
+        f"query-properties: {query_props}",
     ]
     if aggregator_doc:
         info_lines.append(f"executionResults: {aggregator_doc}")
@@ -37,29 +45,55 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
     info = "\n".join(info_lines)
 
 
+    if student_name:
+        
+        static = {
+            "name"         : f"{student_name} {metric_def['name']}",
+            "description"  : metric_def['description'],
+            "project"      : team_name,
+            "metric"       : f"{metric_label}_{student_name}",
+            "factors"      : metric_def.get("factors", []),
+            "source"      : f"mongodb:27017/mongo.{info_collection_name}",
+            "type"         : "metrics",
+            "weights"      : metric_def.get("weights", []),
+            "scope"        : "individual",
+            "student_name" : student_name,
+            "event_type"   : event_type,
+        }
 
+
+        # Part of the mongo document that will change each time there is an event
+        dynamic = {
+            "evaluationDate": evaluation_date,
+            "value"        : final_val,
+            "info"         : info
+        }
+        
+
+
+    else:
     # Part of the mongo document that does not change
-    static = {
-        "name"         : metric_def['name'],
-        "description"  : metric_def['description'],
-        "project"      : team_name,
-        "metric"       : metric_label,
-        "factors"      : metric_def.get("factors", []),
-        "source"      : f"mongodb:27017/mongo.{info_collection_name}",
-        "type"         : "metrics",
-        "weights"      : metric_def.get("weights", []),
-        "scope"        : "individual" if student_name else "team",
-        "event_type"   : event_type,
-    }
-    if student_name:    # If the metric is for a student, add the student name to the document
-        static["student_name"] = student_name
+        static = {
+            "name"         : metric_def['name'],
+            "description"  : metric_def['description'],
+            "project"      : team_name,
+            "metric"       : metric_label,
+            "factors"      : metric_def.get("factors", []),
+            "source"      : f"mongodb:27017/mongo.{info_collection_name}",
+            "type"         : "metrics",
+            "weights"      : metric_def.get("weights", []),
+            "scope"        : "individual" if student_name else "team",
+            "event_type"   : event_type,
+        }
+        if student_name:    # If the metric is for a student, add the student name to the document
+            static["student_name"] = student_name
 
-    # Part of the mongo document that will change each time there is an event
-    dynamic = {
-        "evaluationDate": evaluation_date,
-        "value"        : final_val,
-        "info"         : info
-    }
+        # Part of the mongo document that will change each time there is an event
+        dynamic = {
+            "evaluationDate": evaluation_date,
+            "value"        : final_val,
+            "info"         : info
+        }
     
  
      # Insert into MongoDB, with the dynamic and static parts, upserting or inserting

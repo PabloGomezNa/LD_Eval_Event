@@ -1,0 +1,20 @@
+[
+  {
+    "$group": {
+      "_id": null,
+      "hoursTotal": {
+        "$sum": "$total_hours"
+      },
+      "hoursLearn": {
+        "$sum": "$hours_Formació"
+      }
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "hoursTotal": 1,
+      "hoursLearn": 1
+    }
+  }
+]

@@ -1,18 +1,8 @@
 [
   {
-    "$match": {
-      "user.login": {
-        "$ne": "anonymous"
-      }
-    }
-  },
-  {
     "$group": {
       "_id": null,
-      "nCommitsTotal": {
-        "$sum": "$stats.total"
-      },
-      "nCommitAssignee": {
+      "commitsAssignee": {
         "$sum": {
           "$cond": [
             {
@@ -21,7 +11,7 @@
                 "$$studentUser"
               ]
             },
-            "$stats.total",
+            1,
             0
           ]
         }
@@ -31,8 +21,7 @@
   {
     "$project": {
       "_id": 0,
-      "nCommitsTotal": 1,
-      "nCommitAssignee": 1
+      "commitsAssignee": 1
     }
   }
 ]
