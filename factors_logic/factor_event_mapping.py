@@ -6,7 +6,7 @@ def load_required_fields_factor(filepath: str) -> dict:
     Reads some allowed keys from the .properties factor files. Returns a dict with those fields. 
     """ 
     # Allowed keys for the factor properties
-    allowed_keys = {'name', 'description','metric','formula','weights','relatedEvent'}
+    allowed_keys = {'name', 'description','metric','formula','weights','relatedEvent', 'indicators'}
     props = {}
     params = {}
     # Read each line, skip comments and blank lines
@@ -50,6 +50,7 @@ def build_factor_def(props: dict, qm: str, path: str) -> dict:
         "name": props["name"],
         "description": props.get("description",""),
         "metric": [m.strip() for m in props.get("metric","").split(",") if m],
+        "indicators": [i.strip() for i in props.get("indicators","").split(",") if i],
         "formula": props.get("formula", "average"),
         "weights": [w.strip() for w in props.get('weights', '').split(',') if w.strip()],
         "quality_model": qm,

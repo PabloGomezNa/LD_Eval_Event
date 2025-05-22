@@ -41,9 +41,13 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
     # Part of the mongo document that does not change
     static = {
         "name"         : factor_def['name'],
+        "datasource"   : "QRapids Dashboard",
+        "dates_mismatch_days": 0,
         "description"  : factor_def['description'],
         "project"      : team_name,
         "factor"       : factor_label,
+        "indicators"   : factor_def.get("indicators", []),
+        "missing_metrics": [],
     }
 
     # Part of the mongo document that will change each time there is an event
