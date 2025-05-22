@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from database.mongo_client import get_collection
 
 #def store_metric_result(team_name: str, metric_name: str, scope: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
-def store_metric_result(team_name: str, metric_def: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
+def store_metric_result(team_name: str, metric_def: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None, info_collection_name: str = None):
     '''
     Insert a metric result into the MongoDB database.
     '''
@@ -44,7 +44,8 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
         "description"  : metric_def['description'],
         "project"      : team_name,
         "metric"       : metric_label,
-        "source"      : f"mongodb:27017/mongo.{collection_name}",
+        "factors"      : metric_def.get("factors", []),
+        "source"      : f"mongodb:27017/mongo.{info_collection_name}",
         "type"         : "metrics",
         "weights"      : metric_def.get("weights", []),
         "scope"        : "individual" if student_name else "team",
@@ -57,7 +58,7 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
     dynamic = {
         "evaluationDate": evaluation_date,
         "value"        : final_val,
-        "info"         : info_lines
+        "info"         : info
     }
     
  

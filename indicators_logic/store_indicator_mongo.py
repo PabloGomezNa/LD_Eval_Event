@@ -39,6 +39,8 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
     static = {
         "name"         : indicator_def['name'],
         "datasource"  : "QRapids Dashboard",
+        "dates_mismatch_days": 0,
+        "missing_factors": [],
         "description"  : indicator_def['description'],
         "project"      : team_name,
         "strategic_indicator"       : indicator_label,

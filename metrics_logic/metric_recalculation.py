@@ -21,6 +21,9 @@ def compute_metric_for_student(metric_def: dict, event_type: str, student_name: 
      # Derive the .query filename from the .properties path
     basepath = os.path.splitext(metric_def["filePath"])[0]  # strip ".properties" #HERE WE WILL PUT IT IN .ENV LATER
     query_file = basepath + ".query"
+    
+    meta = get_event_meta(event_type)
+    collection_name= f"{meta['data_source'].lower()}_{team_name}.{meta['collection_suffix']}" 
 
     formula_str = metric_def["formula"]  # e.g. "commitsAssignee / commitsTotal"
     logger.info(f"Recomputing INDIV metric '{metric_def['name']}' formula=({formula_str}) for student='{student_name}' team with external_id='{team_name}'")
@@ -46,7 +49,7 @@ def compute_metric_for_student(metric_def: dict, event_type: str, student_name: 
     logger.info(f"Result: {final_val}\n")
     
     # Store the metric result in MongoDB
-    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=student_name, aggregator_doc=doc)
+    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=student_name, aggregator_doc=doc, info_collection_name=collection_name)
     
 
 
@@ -109,7 +112,7 @@ def compute_metric_for_team(metric_def: dict, event_type: str, team_name: str,st
 
         logger.info(f"TEAM metric result: {final_val}\n")
         # Store the metric result in MongoDB
-        store_metric_result( team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=doc)
+        store_metric_result( team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=doc, info_collection_name=collection_name)
     
 
 
@@ -142,12 +145,35 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
         user = d["_id"]
         aggregator_map[user] = d["count"]
 
+    print(f"Aggregator map: {aggregator_map}")
     # If we have no team_members, set an empty list
     if not team_members:
         team_members = []
 
     # Create a list of team members with 0 if not in the map
     commitsTotal=sum(aggregator_map.values()) # total number of commits/tasks
+    
+    if commitsTotal == 0:
+        final_val = 0.0
+        logger.warning("No commits in team, setting stdev to 0.0")
+        aggregator_doc = {
+            "perUserCounts": aggregator_map,
+            "teamMembers": team_members
+        }
+        store_metric_result(
+            team_name=team_name,
+            metric_def=metric_def,
+            final_val=final_val,
+            event_type=event_type,
+            student_name=None,
+            aggregator_doc=aggregator_doc,
+            info_collection_name=collection_name
+        )
+        logger.info(f"Final stdev: {final_val}\n")
+        return final_val
+    
+    
+    
     fractions = [
     aggregator_map.get(member, 0) / commitsTotal for member in team_members
 ]
@@ -165,7 +191,7 @@ def compute_team_sd_metric(metric_def, event_type, team_name, collection_name, t
     }
 
     # Store the metric result in MongoDB
-    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=aggregator_doc)
+    store_metric_result(team_name=team_name, metric_def=metric_def, final_val=final_val, event_type=event_type, student_name=None, aggregator_doc=aggregator_doc, info_collection_name=collection_name)
     logger.info(f"Final stdev: {final_val}\n")
     return final_val
 
