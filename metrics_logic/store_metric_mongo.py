@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from database.mongo_client import get_collection
+import re
 
 #def store_metric_result(team_name: str, metric_name: str, scope: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None):
 def store_metric_result(team_name: str, metric_def: str, final_val: float, event_type: str, student_name: str = None, aggregator_doc: dict = None, info_collection_name: str = None):
@@ -47,11 +48,13 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
 
     if student_name:
         
+        username = re.sub(r"[ \-]", "_", student_name)
+        
         static = {
             "name"         : f"{student_name} {metric_def['name']}",
             "description"  : metric_def['description'],
             "project"      : team_name,
-            "metric"       : f"{metric_label}_{student_name}",
+            "metric"       : f"{metric_label}_{username}",
             "factors"      : metric_def.get("factors", []),
             "source"      : f"mongodb:27017/mongo.{info_collection_name}",
             "type"         : "metrics",
