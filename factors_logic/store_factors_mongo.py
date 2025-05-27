@@ -1,6 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
+import itertools
 
 from database.mongo_client import get_collection
 
@@ -18,49 +19,73 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
 
     # Factor label, its the name .properties file, for instance task_effort.properties metric, the name is task_effort
     full_path = factor_def["filePath"]
-    filename = os.path.basename(full_path)
-    factor_label = os.path.splitext(filename)[0]
-    
-    # Build a unique _id: team-factorName-timestamp
-    _id_parts = [team_name, factor_label, evaluation_date]
+    factor_name = os.path.splitext(os.path.basename(full_path))[0]
 
-    # Compose info string: list each (student or metric, value, weights)
-    metric_info_parts = []
-    for metric_name, tuples in intermediate_metric_values.items():
+    #Map the factor metric to a weight if it exists, otherwise use an empty list
+    weight_map = dict(zip(
+        factor_def.get("metric", []),
+        factor_def.get("weights", [])
+    ))
+
+
+    metric_parts = []
+    for metric_root, tuples in intermediate_metric_values.items():
+        base_w = weight_map.get(metric_root, None)
+        is_weighted = base_w not in (None, 1, 1.0)
+
         for student, val in tuples:
-            # if student name is None, we use the mretrics name
-            label = student if student is not None else metric_name
-            metric_info_parts.append(
-                f"('{label}', value: {val}, weights: {factor_def.get('weights', [])})"
+            
+            if student is None:
+                label = metric_root
+            else:
+                label = f"{metric_root}_{student}"
+
+            weight_text = f"{str(base_w) if is_weighted else 'no weighted'}"
+            
+            metric_parts.append(
+                f"{label} (value: {round(val, 10)}, {weight_text})"
             )
-    metric_info = "; ".join(metric_info_parts)
-    
-    info_lines = f"metrics:{ {metric_info} }, formula: {factor_def['formula']}, value: {final_value}"
+            
+
+    metrics_block = "; ".join(metric_parts)+ ";"
+    formula_name  = factor_def.get("formula", "average")
+    category      = factor_def.get("category", "NoCategory")
+
+    info_field = (
+        f"metrics: {{ {metrics_block} }}, "
+        f"formula: {formula_name}, "
+        f"value: {round(final_value, 10)}, "
+        f"category: {category}"
+    )
     
 
     # Part of the mongo document that does not change
     static = {
         "name"         : factor_def['name'],
-        "datasource"   : "QRapids Dashboard",
-        "dates_mismatch_days": 0,
         "description"  : factor_def['description'],
         "project"      : team_name,
-        "factor"       : factor_label,
+        "factor"       : factor_name,
         "indicators"   : factor_def.get("indicators", []),
+        "datasource"   : "QRapids Dashboard",
         "missing_metrics": [],
+        "dates_mismatch_days": 0,
     }
 
     # Part of the mongo document that will change each time there is an event
     dynamic = {
         "evaluationDate": evaluation_date,
         "value"        : final_value,
-        "info"         : info_lines
+        "info"         : info_field
     }
     
  
+        
+    # Build a unique _id: team-factorName-timestamp
+    _id = f"{team_name}_{factor_name}_{evaluation_date}"
+    
      # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
     collection.update_one(
-        {"_id": "_".join(_id_parts)},
+        {"_id": _id},
         {
             "$set": dynamic,
             "$setOnInsert": static

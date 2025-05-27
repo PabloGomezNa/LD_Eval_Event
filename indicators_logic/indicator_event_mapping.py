@@ -6,7 +6,7 @@ def load_required_fields_indicator(filepath: str) -> dict:
     """
     Reads some allowed keys from the .properties indicator files. Returns a dict with those fields. 
     """
-    allowed_keys = {'name', 'description','factor','formula','weights','relatedEvent'}
+    allowed_keys = {'name', 'description','factor','formula','weights','relatedEvent','category'}
     props = {}
     params = {}
     
@@ -51,6 +51,7 @@ def build_indicator_def(props: dict, qm: str, path: str) -> dict:
         "formula": props.get("formula", "average"),
         "weights": [w.strip() for w in props.get('weights', '').split(',') if w.strip()],
         "quality_model": qm,
+        "category": props.get("category", "NoCategory"),
     }
 
 def build_indicators_index_per_qm(qm_root=QUALITY_MODELS_DIR):

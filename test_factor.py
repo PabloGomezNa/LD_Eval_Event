@@ -51,8 +51,6 @@ TEAM_STUDENTS_MAP = build_team_students_map()
 TEAM_QUALITYMODEL_MAP = load_qualitymodel_map()
 
 
-print(TEAM_STUDENTS_MAP)
-
 
 
 
@@ -107,15 +105,15 @@ logger.info(f"Triggered factors: {[f['name'] for f in triggered_factors]}")
         
 for factor_def in triggered_factors:
     
-    print(factor_def)
     values= {} # Empty dictionary to store the values for each metric in the factor
     
     for metrics in factor_def["metric"]:
+        
+        print(f"metrics to use: {metrics}")
         #For each metric in the factor, we need to get the latest value for that metric
         # We need to store these values in a dictionary with the metric name as key and the value as value
         values[metrics] = latest_metric_value(external_id, metrics)
     
-    print(values)
     logger.info(f"Values of the metrics of factor {factor_def['name']}: {values}")
     final_val= compute_factor(external_id, factor_def, values)
 
@@ -129,11 +127,9 @@ logger.info(f"Triggered factors: {[f['name'] for f in triggered_indicators]}")
 from indicators_logic.indicator_recalculation import compute_indicator, latest_factor_value
 for indicator_def in triggered_indicators:
     
-    print(indicator_def)
     indicator_values= {} # Empty dictionary to store the values for each metric in the factor
     
     for factors in indicator_def["factor"]:
-        print(f"FACTORS{factors}")
         #For each metric in the factor, we need to get the latest value for that metric
         # We need to store these values in a dictionary with the metric name as key and the value as value
         indicator_values[factors] = latest_factor_value(external_id, factors)
