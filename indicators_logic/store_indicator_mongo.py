@@ -15,48 +15,63 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
     evaluation_date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
 
     # Indicator label, its the name .properties file, for instance task_effort.properties metric, the name is task_effort
-    full_path = indicator_def["filePath"]
-    filename = os.path.basename(full_path)
-    indicator_label = os.path.splitext(filename)[0]
-    
-    # Build a unique _id: team-factorName-timestamp
-    _id_parts = [team_name, indicator_label, evaluation_date]
 
-    # Compose info string: list each (student or metric, value, weights)
-    factor_info_parts = []
-    for factor_name, tuples in intermediate_factor_values.items():
-        for student, val in tuples:
-            # if student name is None, we use the mretrics name
-            label = student if student is not None else factor_name
-            factor_info_parts.append(
-                f"('{label}', value: {val}, weights: {indicator_def.get('weights', [])})"
-            )
-    metric_info = "; ".join(factor_info_parts)
+    indicator_label = os.path.splitext(os.path.basename(indicator_def["filePath"]))[0]
     
-    info_lines = f"indicators:{ {metric_info} }, formula: {indicator_def['formula']}, value: {final_value}"
+    weight_map = dict(zip(
+        indicator_def.get("factor", []),     # en tu .properties suele llamarse "factor"
+        indicator_def.get("weights", [])
+    ))
+        
+        
+    # Build a unique _id: team-factorName-timestamp
+    factor_parts = []
+    for factor_name, tuples in intermediate_factor_values.items():
+        base_w      = weight_map.get(factor_name, None)
+        is_weighted = base_w not in (None, 1, 1.0)
+
+        # The strategic indicator receives only 1 value always (student=None)
+        # pero iteramos igual por coherencia
+        for _student, val in tuples:
+            wtxt = f"weighted:{base_w}" if is_weighted else "no weighted"
+            factor_parts.append(
+                f"{factor_name} (value: {round(val, 10)}, {wtxt})"
+            )
+
+    factors_block = "; ".join(factor_parts) + ";"
+    formula_name  = indicator_def.get("formula", "average")
+    category      = indicator_def.get("category", "Neutral")
+
+    info_field = (
+        f"factors: {{ {factors_block} }}, "
+        f"formula: {formula_name}, "
+        f"value: {round(final_value, 10)}, "
+        f"category: {category}"
+    )
     
         # Part of the mongo document that does not change
     static = {
         "name"         : indicator_def['name'],
-        "datasource"  : "QRapids Dashboard",
-        "dates_mismatch_days": 0,
-        "missing_factors": [],
         "description"  : indicator_def['description'],
         "project"      : team_name,
         "strategic_indicator"       : indicator_label,
+        "datasource"  : "QRapids Dashboard",
+        "dates_mismatch_days": 0,
+        "missing_factors": [],
     }
 
     # Part of the mongo document that will change each time there is an event
     dynamic = {
         "evaluationDate": evaluation_date,
         "value"        : final_value,
-        "info"         : info_lines
+        "info"         : info_field
     }
     
  
+    _id = f"{team_name}_{indicator_label}_{evaluation_date}"
      # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
     collection.update_one(
-        {"_id": "_".join(_id_parts)},
+        {"_id": _id},
         {
             "$set": dynamic,
             "$setOnInsert": static
