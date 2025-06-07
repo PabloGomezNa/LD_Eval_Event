@@ -11,12 +11,19 @@ from factors_logic.factor_recalculation import compute_factor, latest_metric_val
 from indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
 from indicators_logic.indicator_recalculation import compute_indicator, latest_factor_value
 
-from utils.load_config_file import get_event_meta
-from utils.logger_setup import setup_logging
+from config.load_config_file import get_event_meta
+from config.logger_config import setup_logging
 from utils.StudentDatafromLDRESTAPI import build_team_students_map
-from utils.quality_model_config import load_qualitymodel_map, choose_qualitymodel
+from config.quality_model_config import load_qualitymodel_map, choose_qualitymodel
 
 from config.settings import QUALITY_MODELS_DIR
+
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from pytz import timezone
+
+from ld_refresh import run_daily_refresh
+
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -121,6 +128,20 @@ def background_process_event(event_data):
 
 
 
+def start_scheduler():
+    
+    schedule = BackgroundScheduler(timezone=timezone("Europe/Madrid"))
+    schedule.add_job(
+        func=run_daily_refresh,
+        trigger="cron",
+        hour=0,  # Runs every day at midnight
+        minute=0,
+        second=0,
+        #start_date='',
+        #end_date=''
+        id="daily_refresh_job",
+    )
+    schedule.start()
 
 
 @app.route("/api/event", methods=["POST"])
@@ -152,4 +173,5 @@ def create_app():
 
 if __name__ == "__main__":
     # Run the app directly
+    start_scheduler() # Start the background scheduler, 
     run_app()

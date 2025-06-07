@@ -23,6 +23,15 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
         indicator_def.get("weights", [])
     ))
         
+    _id = f"{team_name}_{indicator_label}_{evaluation_date}" 
+        # We need to check if the document already exists, and if it does, we increment the number of times modified
+    # Check if the document already exists
+    existing_doc = collection.find_one({"_id": _id})
+    if existing_doc:
+        # If it exists, increment the number of times modified
+        n = existing_doc.get("times_modified", 0) + 1
+    else:
+        n = 1
         
     # Build a unique _id: team-factorName-timestamp
     factor_parts = []
@@ -58,17 +67,20 @@ def store_indicator_result(team_name:str, indicator_def: dict, final_value: floa
         "datasource"  : "QRapids Dashboard",
         "dates_mismatch_days": 0,
         "missing_factors": [],
+        "createdAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
     }
 
     # Part of the mongo document that will change each time there is an event
     dynamic = {
         "evaluationDate": evaluation_date,
         "value"        : final_value,
-        "info"         : info_field
+        "info"         : info_field,
+        "modifiedAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
+        "times_modified": n,
     }
     
  
-    _id = f"{team_name}_{indicator_label}_{evaluation_date}"
+    
      # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
     collection.update_one(
         {"_id": _id},

@@ -5,8 +5,8 @@ from metrics_logic.run_mogo_query import run_mongo_query_for_metric, evaluate_fo
 from statistics import pstdev
 
 from database.mongo_client import get_collection
-from utils.load_config_file import get_event_meta
-from utils.logger_setup import setup_logging
+from config.load_config_file import get_event_meta
+from config.logger_config import setup_logging
 import logging
 
 setup_logging()
