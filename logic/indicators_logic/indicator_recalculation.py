@@ -1,4 +1,4 @@
-from indicators_logic.store_indicator_mongo import store_indicator_result
+from logic.indicators_logic.store_indicator_mongo import store_indicator_result
 from database.mongo_client import get_collection
 
 def latest_factor_value(team, factor_name, student=None):

@@ -1,7 +1,7 @@
 import os
-from metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
-from metrics_logic.store_metric_mongo import store_metric_result
-from metrics_logic.run_mogo_query import run_mongo_query_for_metric, evaluate_formula
+from logic.metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
+from logic.metrics_logic.store_metric_mongo import store_metric_result
+from logic.metrics_logic.run_mogo_query import run_mongo_query_for_metric, evaluate_formula
 from statistics import pstdev
 
 from database.mongo_client import get_collection

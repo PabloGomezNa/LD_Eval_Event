@@ -1,4 +1,4 @@
-from factors_logic.store_factors_mongo import store_factor_result
+from logic.factors_logic.store_factors_mongo import store_factor_result
 from database.mongo_client import get_collection
 import re
 

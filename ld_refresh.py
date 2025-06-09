@@ -9,8 +9,7 @@ API_URL       = os.getenv("EVAL_API_URL", "http://localhost:5001/api/event")
 TEAM_STUDENTS = build_team_students_map()
 QM_MAP        = load_qualitymodel_map()
 
-EVENT_TYPES   = ["push", "task", "epic", "issue", "userstory"]
-
+EVENT_TYPES   = ["push", "task", "userstory"]
 
 
 
