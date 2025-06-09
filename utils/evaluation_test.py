@@ -15,16 +15,16 @@ from factors_logic.factor_recalculation import compute_factor, latest_metric_val
 
 from indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
 
-from utils.load_config_file import get_event_meta
-from utils.logger_setup import setup_logging
+from config.load_config_file import get_event_meta
+from config.logger_config import setup_logging
 from utils.StudentDatafromLDRESTAPI import build_team_students_map
-from utils.quality_model_config import load_qualitymodel_map, choose_qualitymodel
+from config.quality_model_config import load_qualitymodel_map, choose_qualitymodel
 
 
 from pymongo import MongoClient
 
 
-from utils.logger_setup import setup_logging
+from config.logger_config import setup_logging
 import logging
 
 setup_logging()

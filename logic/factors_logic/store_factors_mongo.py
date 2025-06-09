@@ -27,6 +27,17 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
         factor_def.get("weights", [])
     ))
 
+        # Build a unique _id: team-factorName-timestamp
+    _id = f"{team_name}_{factor_name}_{evaluation_date}"
+    
+    # We need to check if the document already exists, and if it does, we increment the number of times modified
+    # Check if the document already exists
+    existing_doc = collection.find_one({"_id": _id})
+    if existing_doc:
+        # If it exists, increment the number of times modified
+        n = existing_doc.get("times_modified", 0) + 1
+    else:
+        n=1
 
     metric_parts = []
     for metric_root, tuples in intermediate_metric_values.items():
@@ -69,19 +80,21 @@ def store_factor_result(team_name:str, factor_def: dict, final_value: float, int
         "datasource"   : "QRapids Dashboard",
         "missing_metrics": [],
         "dates_mismatch_days": 0,
+        "createdAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
     }
 
     # Part of the mongo document that will change each time there is an event
     dynamic = {
         "evaluationDate": evaluation_date,
         "value"        : final_value,
-        "info"         : info_field
+        "info"         : info_field,
+        "modifiedAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
+        "times_modified": n,
     }
     
  
         
-    # Build a unique _id: team-factorName-timestamp
-    _id = f"{team_name}_{factor_name}_{evaluation_date}"
+
     
      # Insert into MongoDB, with the dynamic and static parts, upserting or inserting
     collection.update_one(

@@ -1,4 +1,4 @@
-from utils.quality_model_loader import scan_quality_model_folder
+from database.quality_model_loader import scan_quality_model_folder
 from config.settings import QUALITY_MODELS_DIR
 
 def load_required_fields_metrics(filepath: str)-> dict:

@@ -26,6 +26,14 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
         id_parts.insert(2, student_name)           # add between team & date
     doc_id = "-".join(id_parts)
 
+    # We need to check if the document already exists, and if it does, we increment the number of times modified
+    # Check if the document already exists
+    existing_doc = collection.find_one({"_id": doc_id})
+    if existing_doc:
+        # If it exists, increment the number of times modified
+        n = existing_doc.get("times_modified", 0) + 1
+    else:
+        n=1
 
 # just abans de construir info_lines:
     if student_name:
@@ -62,6 +70,7 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
             "scope"        : "individual",
             "student_name" : student_name,
             "event_type"   : event_type,
+            "createdAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
         }
 
 
@@ -69,7 +78,9 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
         dynamic = {
             "evaluationDate": evaluation_date,
             "value"        : final_val,
-            "info"         : info
+            "info"         : info,
+            "modifiedAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
+            "times_modified": n,
         }
         
 
@@ -87,6 +98,7 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
             "weights"      : metric_def.get("weights", []),
             "scope"        : "individual" if student_name else "team",
             "event_type"   : event_type,
+            "createdAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
         }
         if student_name:    # If the metric is for a student, add the student name to the document
             static["student_name"] = student_name
@@ -95,7 +107,9 @@ def store_metric_result(team_name: str, metric_def: str, final_val: float, event
         dynamic = {
             "evaluationDate": evaluation_date,
             "value"        : final_val,
-            "info"         : info
+            "info"         : info,
+            "modifiedAt"  : datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d %H:%M:%S"),
+            "times_modified": n,
         }
     
  
