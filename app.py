@@ -2,18 +2,18 @@ import threading
 from flask import Flask, request, jsonify
 import logging
 
-from metrics_logic.metric_event_mapping import build_metrics_index_per_qm
-from metrics_logic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
+from logic.metrics_logic.metric_event_mapping import build_metrics_index_per_qm
+from logic.metrics_logic.metric_recalculation import compute_metric_for_student, compute_metric_for_team
 
-from factors_logic.factor_event_mapping import build_factors_index_per_qm
-from factors_logic.factor_recalculation import compute_factor, latest_metric_value
+from logic.factors_logic.factor_event_mapping import build_factors_index_per_qm
+from logic.factors_logic.factor_recalculation import compute_factor, latest_metric_value
 
-from indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
-from indicators_logic.indicator_recalculation import compute_indicator, latest_factor_value
+from logic.indicators_logic.indicator_event_mapping import build_indicators_index_per_qm
+from logic.indicators_logic.indicator_recalculation import compute_indicator, latest_factor_value
 
 from config.load_config_file import get_event_meta
 from config.logger_config import setup_logging
-from utils.StudentDatafromLDRESTAPI import build_team_students_map
+from API_calls.StudentDatafromLDRESTAPI import build_team_students_map
 from config.quality_model_config import load_qualitymodel_map, choose_qualitymodel
 
 from config.settings import QUALITY_MODELS_DIR

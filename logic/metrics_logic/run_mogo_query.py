@@ -1,4 +1,4 @@
-from metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
+from logic.metrics_logic.metric_placeholder import load_query_template, replace_placeholders_in_query
 from config.load_config_file import get_event_meta
 from config.logger_config import setup_logging
 from database.mongo_client import get_collection
