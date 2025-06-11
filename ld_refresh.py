@@ -2,7 +2,7 @@ import os, logging, requests
 import time
 from API_calls.StudentDatafromLDRESTAPI import build_team_students_map
 from config.quality_model_config    import load_qualitymodel_map, choose_qualitymodel
-from config.load_config_file        import get_event_meta
+from config.load_config_file        import get_event_meta, get_available_events
 from database.mongo_client         import db        
 
 API_URL       = os.getenv("EVAL_API_URL", "http://localhost:5001/api/event")
@@ -44,9 +44,11 @@ def run_daily_refresh() -> None:
             logging.info("Equipo %s sin actividad previa; se omite.", team) # If the team is not active, skip it
             continue
         
-        for event in EVENT_TYPES: # If the team is active, trigger all the events
+        events= get_available_events()
+        for event in events: # If the team is active, trigger all the events
             trigger_team_event(team, event)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
     run_daily_refresh()
+    

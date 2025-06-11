@@ -2,7 +2,7 @@ import json
 from typing import Optional
 
 
-def load_qualitymodel_map(path: str = "quality_models_teams_config.json") -> dict:
+def load_qualitymodel_map(path: str = "config_files/quality_models_teams_config.json") -> dict:
     '''
     Load a mapping from external project IDs to quality model keys.
     '''

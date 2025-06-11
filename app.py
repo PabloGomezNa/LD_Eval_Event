@@ -18,6 +18,7 @@ from config.quality_model_config import load_qualitymodel_map, choose_qualitymod
 
 from config.settings import QUALITY_MODELS_DIR
 
+from config_files.config_variables import _Start_scheduler_date, _End_scheduler_date, _Hour_scheduler, _Minute_scheduler, _Second_scheduler
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import timezone
@@ -134,11 +135,11 @@ def start_scheduler():
     schedule.add_job(
         func=run_daily_refresh,
         trigger="cron",
-        hour=0,  # Runs every day at midnight
-        minute=0,
-        second=0,
-        #start_date='',
-        #end_date=''
+        hour=_Hour_scheduler,  # Runs every day at midnight
+        minute=_Minute_scheduler,
+        second=_Second_scheduler,
+        start_date=_Start_scheduler_date,
+        end_date=_End_scheduler_date,
         id="daily_refresh_job",
     )
     schedule.start()
