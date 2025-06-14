@@ -32,16 +32,15 @@ def trigger_team_event(team_id: str, event_type: str) -> None:
     }
     start = time.perf_counter()
     r = requests.post(API_URL, json=payload, timeout=(0.2, 1)) #connect timeout 0.2s, read timeout 1s
-    logging.info("POST tardó %.3f s", time.perf_counter() - start)
-
-    logging.info("team=%s event=%s → status=%s", team_id, event_type, r.status_code)
+    logging.debug("POST took %.3f s", time.perf_counter() - start)
+    logging.defug("team=%s event=%s → status=%s", team_id, event_type, r.status_code)
 
 
 def run_daily_refresh() -> None:
     '''Function to run the daily refresh of events.'''
     for team in TEAM_STUDENTS.keys(): # Get all the teams from the TEAM_STUDENTS map
         if not team_is_active(team):
-            logging.info("Equipo %s sin actividad previa; se omite.", team) # If the team is not active, skip it
+            logging.info("Team %s does not have activity we ommit", team) # If the team is not active, skip it
             continue
         
         events= get_available_events()
