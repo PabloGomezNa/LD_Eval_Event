@@ -162,7 +162,7 @@ def handle_event():
 
 def run_app():
     # Runs the Flask app
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=False, use_reloader=False)
 
 
 
@@ -170,7 +170,10 @@ def create_app():
     """
     Create and configure the Flask application.
     """
-    return app     # ← la variable que ya tienes arriba
+    if not hasattr(app, "scheduler_started"):
+        start_scheduler()
+        app.scheduler_started = True
+    return app     
 
 if __name__ == "__main__":
     # Run the app directly
