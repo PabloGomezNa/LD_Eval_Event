@@ -9,7 +9,6 @@ API_URL       = os.getenv("EVAL_API_URL", "http://localhost:5001/api/event")
 TEAM_STUDENTS = build_team_students_map()
 QM_MAP        = load_qualitymodel_map()
 
-EVENT_TYPES   = ["push", "task", "userstory"]
 
 
 
@@ -31,9 +30,9 @@ def trigger_team_event(team_id: str, event_type: str) -> None:
         "quality_model": choose_qualitymodel(team_id, None, QM_MAP)
     }
     start = time.perf_counter()
-    r = requests.post(API_URL, json=payload, timeout=(0.2, 1)) #connect timeout 0.2s, read timeout 1s
-    logging.debug("POST took %.3f s", time.perf_counter() - start)
-    logging.defug("team=%s event=%s → status=%s", team_id, event_type, r.status_code)
+    r = requests.post(API_URL, json=payload, timeout=(0.4, 1)) #connect timeout 0.2s, read timeout 1s
+    logging.info("POST took %.3f s", time.perf_counter() - start)
+    logging.info("team=%s event=%s → status=%s", team_id, event_type, r.status_code)
 
 
 def run_daily_refresh() -> None:
