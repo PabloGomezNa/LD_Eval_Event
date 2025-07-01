@@ -139,8 +139,8 @@ locust -f tests/   # optional load test scripts
 
 Released under the **Apache License 2.0** – see [`LICENSE`](./LICENSE).
 
+Part of the Master’s Thesis **“Redefinition of the Intake and Processing of Learning Dashboard Data”** (UPC · 2025).
+
 ---
 
-## Acknowledgements
 
-Part of the Master’s Thesis **“Redefinition of the Intake and Processing of Learning Dashboard Data”** (UPC · 2025).
